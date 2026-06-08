@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  member
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum CandidateStatus {
+  active
+  inactive
+}
+
+enum SuggestionStatus {
+  proposed
+  accepted
+  meeting
+  closed
+}
+
+enum AuditSource {
+  user
+  bot
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  memberships   Membership[]
+  createdAt     DateTime     @default(now())
+
+  candidatesCreated  Candidate[]  @relation("CandidateCreatedBy")
+  suggestionsCreated Suggestion[] @relation("SuggestionCreatedBy")
+}
+
+model Community {
+  id          String       @id @default(cuid())
+  name        String
+  // WhatsApp config is added in Phase 2.
+  memberships Membership[]
+  candidates  Candidate[]
+  suggestions Suggestion[]
+  auditLogs   AuditLog[]
+  createdAt   DateTime     @default(now())
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  communityId String
+  role        Role      @default(member)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, communityId])
+  @@index([communityId])
+}
+
+model Candidate {
+  id                 String          @id @default(cuid())
+  communityId        String
+  name               String
+  gender             Gender
+  birthdate          DateTime?
+  ageManual          Int?
+  occupation         String?
+  heightCm           Int?
+  city               String?
+  requirements       String?         @db.Text
+  photoUrl           String?
+  details            Json            @default("{}")
+  status             CandidateStatus @default(active)
+  deactivationReason String?
+  deactivationNote   String?         @db.Text
+  deactivatedAt      DateTime?
+  createdById        String?
+  // Phase-2 provenance:
+  sourceMessageId    String?
+  rawText            String?         @db.Text
+  parsedJson         Json?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  community      Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy      User?        @relation("CandidateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  suggestionsAsA Suggestion[] @relation("SuggestionA")
+  suggestionsAsB Suggestion[] @relation("SuggestionB")
+
+  @@index([communityId, status])
+  @@index([communityId, gender])
+}
+
+model Suggestion {
+  id           String           @id @default(cuid())
+  communityId  String
+  candidateAId String
+  candidateBId String
+  // pairKey = sorted("A:B") to enforce one suggestion per unordered pair
+  pairKey      String
+  status       SuggestionStatus @default(proposed)
+  outcome      String?
+  notes        String?          @db.Text
+  createdById  String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  community  Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  candidateA Candidate @relation("SuggestionA", fields: [candidateAId], references: [id], onDelete: Cascade)
+  candidateB Candidate @relation("SuggestionB", fields: [candidateBId], references: [id], onDelete: Cascade)
+  createdBy  User?     @relation("SuggestionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([communityId, pairKey])
+  @@index([communityId, status])
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  communityId String
+  entityType  String // 'candidate' | 'suggestion' | 'membership' | 'community'
+  entityId    String
+  entityLabel String // human-readable snapshot name
+  action      String // 'create' | 'update' | 'deactivate' | 'reactivate' | 'delete'
+  source      AuditSource @default(user)
+  actorId     String?
+  changes     Json? // { field: { from, to } }
+  snapshot    Json? // full record on delete
+  note        String?     @db.Text
+  createdAt   DateTime    @default(now())
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, entityType])
+}
+
+// ---- Auth.js (NextAuth) adapter models ----
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
