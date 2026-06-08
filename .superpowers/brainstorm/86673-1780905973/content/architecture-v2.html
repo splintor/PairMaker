@@ -1,0 +1,41 @@
+<h2>System Architecture — auto-add + correction loop</h2>
+<p class="subtitle">The bot now writes to the group too. Review the numbered flow, then we'll continue in the terminal.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Ingestion & correction flow</div>
+  <div class="mockup-body" style="font-family:system-ui;line-height:1.55;font-size:13px">
+
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:stretch">
+      <div style="flex:1;min-width:230px;border:2px solid #25D366;border-radius:10px;padding:14px;background:#f0fff4">
+        <div style="font-weight:700;color:#128C7E">WhatsApp Worker (Baileys, always-on)</div>
+        <p style="margin:6px 0 0">Reads the group AND posts back into it. Linked per community via QR.</p>
+      </div>
+      <div style="flex:1.3;min-width:240px;border:2px solid #0070f3;border-radius:10px;padding:14px;background:#f0f7ff">
+        <div style="font-weight:700;color:#0070f3">Next.js on Vercel</div>
+        <p style="margin:6px 0 0"><b>/api/ingest</b> · <b>/api/correct</b> · web UI · Auth.js · Claude Haiku</p>
+      </div>
+      <div style="flex:1;min-width:200px;border:2px solid #6b46c1;border-radius:10px;padding:14px;background:#f7f0ff">
+        <div style="font-weight:700;color:#6b46c1">Postgres + Blob</div>
+        <p style="margin:6px 0 0">Candidates · matches · <b>message↔candidate links</b> · <b>edit/audit log</b> · photos</p>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;border:1px solid #25D366;border-radius:10px;padding:12px;background:#fbfffc">
+      <div style="font-weight:700;color:#128C7E;margin-bottom:6px">A · New candidate posted in group</div>
+      <div>1. Worker sees message → POST <code>/api/ingest</code> (text + photo + msgId)</div>
+      <div>2. Vercel: photo→Blob, Haiku parses Hebrew → <b>creates active candidate</b></div>
+      <div>3. Bot replies <b>to that message</b>: «נוסף ✅ דנה, 27, מורה — לפרטים: app.../c/abc» + saves <b>confirmation-msgId ↔ candidate</b></div>
+    </div>
+
+    <div style="margin-top:12px;border:1px solid #f5a623;border-radius:10px;padding:12px;background:#fffdf6">
+      <div style="font-weight:700;color:#b8770a;margin-bottom:6px">B · Correction (reply to the bot's confirmation)</div>
+      <div>4. Someone quote-replies the bot: «הגיל לא נכון, היא בת 28»</div>
+      <div>5. Worker matches quoted msgId → POST <code>/api/correct</code> → Haiku reads the change → <b>updates candidate + writes audit log</b></div>
+      <div>6. Bot replies: «עודכן ✅ גיל: 28»</div>
+    </div>
+
+    <div style="margin-top:14px;padding:10px;border:1px dashed #aaa;border-radius:8px;background:#fafafa">
+      No pre-approval gate — corrections + full edit history are the safety net. Matchmakers also edit anything directly in the web app.
+    </div>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<h2>System Architecture</h2>
+<p class="subtitle">How the pieces fit together — review the flow, then we'll talk about it in the terminal</p>
+
+<div class="mockup">
+  <div class="mockup-header">Components & data flow</div>
+  <div class="mockup-body" style="font-family:system-ui;line-height:1.5">
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:stretch">
+
+      <div style="flex:1;min-width:220px;border:2px solid #25D366;border-radius:10px;padding:14px;background:#f0fff4">
+        <div style="font-weight:700;color:#128C7E">1 · WhatsApp Worker (always-on)</div>
+        <p style="margin:6px 0 0;font-size:13px">Baileys client, hosted free on Render/Railway/Fly.<br>
+        Linked to each community's WhatsApp via QR.<br>
+        Listens to the group → on each new message, forwards <b>raw text + media</b> to the web app's secure webhook.</p>
+      </div>
+
+      <div style="display:flex;align-items:center;font-size:24px;color:#888">→</div>
+
+      <div style="flex:1.4;min-width:260px;border:2px solid #0070f3;border-radius:10px;padding:14px;background:#f0f7ff">
+        <div style="font-weight:700;color:#0070f3">2 · Next.js App on Vercel</div>
+        <p style="margin:6px 0 0;font-size:13px">
+        • <b>/api/ingest</b> webhook → Claude Haiku parses Hebrew text into fields → saves a <b>draft candidate (pending review)</b>, uploads photo to Blob.<br>
+        • <b>Web UI</b> (Hebrew, RTL): review drafts, search, candidate profiles, match tracking, deactivation, settings.<br>
+        • Auth.js: magic-link + Google.</p>
+      </div>
+
+      <div style="display:flex;align-items:center;font-size:24px;color:#888">→</div>
+
+      <div style="flex:1;min-width:200px;border:2px solid #6b46c1;border-radius:10px;padding:14px;background:#f7f0ff">
+        <div style="font-weight:700;color:#6b46c1">3 · Data stores (free tier)</div>
+        <p style="margin:6px 0 0;font-size:13px">
+        • <b>Vercel/Neon Postgres</b> — candidates, matches, communities, users (Prisma ORM).<br>
+        • <b>Vercel Blob</b> — candidate photos.</p>
+      </div>
+
+    </div>
+
+    <div style="margin-top:18px;padding:12px;border:1px dashed #aaa;border-radius:8px;background:#fafafa;font-size:13px">
+      <b>Matchmaker</b> opens the web app → reviews/edits the parsed draft → approves it into the candidate pool → searches for matches → records suggestions & their status → deactivates candidates who are no longer available.
+    </div>
+
+    <div style="margin-top:14px;font-size:12px;color:#666">
+      Multi-tenant: every row is scoped to a <b>community</b>. A matchmaker only ever sees their own community's data.
+    </div>
+
+  </div>
+</div>

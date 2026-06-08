@@ -1,0 +1,81 @@
+<h2>Candidate profile + match tracking</h2>
+<p class="subtitle">Everything about one candidate: details, the suggestions made for them and their status, and the deactivate action.</p>
+
+<div class="mockup">
+  <div class="mockup-header">פרופיל מועמד</div>
+  <div class="mockup-body" style="font-family:system-ui;direction:rtl;background:#f8f9ff;padding:16px">
+    <div style="display:flex;gap:16px;align-items:flex-start">
+
+      <!-- left: details -->
+      <div style="flex:1.1;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:26px">ד</div>
+          <div>
+            <div style="font-size:21px;font-weight:800;color:#3730a3">דנה לוי</div>
+            <div style="color:#4f46e5;font-size:13px">בת 27 · מורה · גובה 165</div>
+            <span style="display:inline-block;margin-top:6px;background:#ecfdf5;color:#047857;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600">פעילה</span>
+          </div>
+          <div style="margin-right:auto;display:flex;gap:8px">
+            <button style="background:#6366f1;color:#fff;border:none;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600">+ הצעת שידוך</button>
+            <button style="background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:8px 12px;font-size:13px">עריכה</button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div style="background:#f8f9ff;border-radius:10px;padding:10px"><div style="color:#9ca3af;font-size:11px">עיר</div>ירושלים</div>
+          <div style="background:#f8f9ff;border-radius:10px;padding:10px"><div style="color:#9ca3af;font-size:11px">מגזר / זרם</div>דתי-לאומי</div>
+          <div style="background:#f8f9ff;border-radius:10px;padding:10px"><div style="color:#9ca3af;font-size:11px">השכלה</div>תואר ראשון</div>
+          <div style="background:#f8f9ff;border-radius:10px;padding:10px;color:#c7c9d1"><div style="color:#9ca3af;font-size:11px">+ שדה מותאם</div>נוסף בקוד</div>
+        </div>
+
+        <div style="margin-top:14px;background:#f8f9ff;border-radius:10px;padding:12px;font-size:13px;color:#3730a3">
+          <div style="color:#9ca3af;font-size:11px;margin-bottom:4px">דרישות לבן הזוג</div>
+          רציני, בעל מקצוע, גילאי 28–33, שומר מסורת, ממשפחה חמה.
+        </div>
+
+        <div style="margin-top:14px;font-size:12px;color:#9ca3af;border-top:1px dashed #e5e7eb;padding-top:10px">
+          📥 נוצר אוטומטית מהודעת וואטסאפ · 🕓 היסטוריית עריכות (3) · ⚠️ השבתת מועמדת
+        </div>
+      </div>
+
+      <!-- right: match tracking -->
+      <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px">
+        <div style="font-weight:700;color:#3730a3;margin-bottom:4px">הצעות שידוך</div>
+        <div style="font-size:12px;color:#9ca3af;margin-bottom:12px">מה כבר הוצע לדנה ובאיזה שלב</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+
+          <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:600;color:#1f2937">↔ יוסי כהן (30, מהנדס)</div>
+              <span style="background:#fef3c7;color:#b45309;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600">בפגישה</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px">הוצע ▸ הסכימו ▸ <b>בפגישה</b> ▸ סגירה</div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:4px">נפגשו פעמיים, ממשיכים. עודכן 02/06</div>
+          </div>
+
+          <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:600;color:#1f2937">↔ אבי לוי (29, רו״ח)</div>
+              <span style="background:#fee2e2;color:#b91c1c;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600">נסגר · לא התאים</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px">הוצע ▸ הסכימו ▸ נפגשו ▸ <b>נסגר</b></div>
+          </div>
+
+          <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:600;color:#1f2937">↔ מנחם פרידמן (33, מורה)</div>
+              <span style="background:#eef2ff;color:#4338ca;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600">הוצע</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px"><b>הוצע</b> ▸ הסכימו ▸ פגישה ▸ סגירה</div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:4px">ממתין לתשובה</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:14px">This is the last mockup. After your feedback I'll write the full spec. Anything to change here?</p>
