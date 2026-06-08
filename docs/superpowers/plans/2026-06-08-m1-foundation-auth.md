@@ -24,8 +24,8 @@ src/app/layout.tsx                      # root: dir=rtl lang=he, theme
 src/app/globals.css                     # Tailwind + lavender tokens
 src/app/page.tsx                        # redirects to /app or /signin
 src/app/(auth)/signin/page.tsx          # sign-in UI
-src/app/(app)/layout.tsx                # authed shell: top nav + community switcher
-src/app/(app)/page.tsx                  # placeholder dashboard
+src/app/app/layout.tsx                # authed shell: top nav + community switcher
+src/app/app/page.tsx                  # placeholder dashboard
 src/app/api/auth/[...nextauth]/route.ts # Auth.js handlers
 src/lib/db.ts                           # Prisma client singleton
 src/lib/auth.ts                         # Auth.js config (providers, adapter, callbacks)
@@ -37,7 +37,7 @@ src/components/CommunitySwitcher.tsx     # tenant switcher (client)
 src/components/TopNav.tsx                # top navigation bar
 ```
 
-> Route protection for `/app/*` is enforced **server-side** in `src/app/(app)/layout.tsx`
+> Route protection for `/app/*` is enforced **server-side** in `src/app/app/layout.tsx`
 > (`requireMembership()` redirects unauthenticated users to `/signin`). We deliberately do **not**
 > use Next.js middleware for auth here: with database sessions + the Prisma adapter, importing the
 > Prisma-bound `auth` into middleware would run Prisma on the Edge runtime, which is unsupported.
@@ -828,14 +828,14 @@ git commit -m "feat: active-community resolution and membership guard"
 ## Task 7: Authenticated shell (top nav + community switcher) + protected route
 
 **Files:**
-- Create: `src/app/(app)/layout.tsx`
-- Create: `src/app/(app)/page.tsx`
+- Create: `src/app/app/layout.tsx`
+- Create: `src/app/app/page.tsx`
 - Create: `src/components/TopNav.tsx`
 - Create: `src/components/CommunitySwitcher.tsx`
 - Create: `src/app/api/active-community/route.ts`
 - Create: `src/app/no-community/page.tsx`
 
-> Auth protection for `/app/*` is handled by `requireMembership()` inside `(app)/layout.tsx`
+> Auth protection for `/app/*` is handled by `requireMembership()` inside `app/layout.tsx`
 > (Step 5). No middleware — see the note in the File Structure section.
 
 - [ ] **Step 1: Endpoint to switch active community (sets the cookie)**
@@ -928,7 +928,7 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
 
 - [ ] **Step 4: Authed layout + placeholder dashboard**
 
-Create `src/app/(app)/layout.tsx`:
+Create `src/app/app/layout.tsx`:
 ```tsx
 import { requireMembership } from "@/lib/community";
 import { TopNav } from "@/components/TopNav";
@@ -944,7 +944,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 }
 ```
 
-Create `src/app/(app)/page.tsx`:
+Create `src/app/app/page.tsx`:
 ```tsx
 import { requireMembership } from "@/lib/community";
 
