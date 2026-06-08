@@ -1,7 +1,7 @@
-export default function Home() {
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold text-brand-700">שלום</h1>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+
+export default async function Home() {
+  const session = await auth();
+  redirect(session ? "/app" : "/signin");
 }
