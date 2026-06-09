@@ -6,11 +6,11 @@ type Values = Record<string, string | number | null | undefined>;
 function Input({ field, value }: { field: FieldDef; value: string }) {
   const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right";
   if (field.type === "longtext") {
-    return <textarea name={field.key} defaultValue={value} rows={3} className={base} />;
+    return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
   }
   if (field.type === "select") {
     return (
-      <select name={field.key} defaultValue={value} className={base}>
+      <select name={field.key} dir="rtl" defaultValue={value} className={base}>
         <option value="">—</option>
         {field.options?.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
@@ -21,6 +21,7 @@ function Input({ field, value }: { field: FieldDef; value: string }) {
   return (
     <input
       name={field.key}
+      dir="rtl"
       type={field.type === "number" ? "number" : "text"}
       defaultValue={value}
       required={field.required}

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Candidate } from "@prisma/client";
-import { displayAge } from "@/lib/candidate-display";
+import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { StatusPill } from "@/components/ui";
 
 export function CandidateCard({ c }: { c: Candidate }) {
   const age = displayAge(c);
   const subtitleParts = [
-    age != null ? `גיל ${age}` : null,
+    ageLabel(c.gender, age),
     c.occupation,
     c.heightCm ? `${c.heightCm} ס"מ` : null,
   ].filter(Boolean);

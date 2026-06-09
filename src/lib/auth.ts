@@ -6,7 +6,9 @@ import { db } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  session: { strategy: "database" },
+  // JWT sessions avoid a DB round-trip on every request (faster navigation).
+  // The Prisma adapter still persists users/accounts/verification tokens.
+  session: { strategy: "jwt" },
   pages: { signIn: "/signin" },
   providers: [
     Google({
@@ -19,8 +21,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session({ session, user }) {
-      if (session.user) session.user.id = user.id;
+    jwt({ token, user }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user && token.id) session.user.id = token.id as string;
       return session;
     },
   },

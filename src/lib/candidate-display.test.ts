@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { displayAge } from "./candidate-display";
+import { displayAge, ageLabel } from "./candidate-display";
+
+describe("ageLabel", () => {
+  it("uses בן for male", () => expect(ageLabel("male", 30)).toBe("בן 30"));
+  it("uses בת for female", () => expect(ageLabel("female", 27)).toBe("בת 27"));
+  it("returns null when age is null", () => expect(ageLabel("male", null)).toBeNull());
+});
 
 describe("displayAge", () => {
   const now = new Date("2026-06-09T00:00:00Z");

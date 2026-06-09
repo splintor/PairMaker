@@ -35,6 +35,7 @@ export function DeactivateDialog({
                 <select
                   name="reason"
                   required
+                  dir="rtl"
                   className="mt-1 w-full rounded-lg border border-brand-200 px-3 py-2"
                 >
                   {DEACTIVATION_REASONS.map((r) => (

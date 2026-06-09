@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge } from "@/lib/candidate-display";
+import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
@@ -63,11 +63,7 @@ export default async function CandidateProfile({
               <StatusPill active={c.status === "active"} />
             </div>
             <div className="text-sm text-brand-600">
-              {[
-                optionLabel(getField("gender")!, c.gender),
-                age != null ? `גיל ${age}` : null,
-                c.occupation,
-              ].filter(Boolean).join(" · ")}
+              {[ageLabel(c.gender, age), c.occupation].filter(Boolean).join(" · ")}
             </div>
           </div>
           <div className="flex gap-2">

@@ -1,3 +1,9 @@
+/** Gendered age phrase: "בן 30" for a male, "בת 27" for a female. null when no age. */
+export function ageLabel(gender: "male" | "female", age: number | null): string | null {
+  if (age == null) return null;
+  return gender === "female" ? `בת ${age}` : `בן ${age}`;
+}
+
 export function displayAge(
   c: { birthdate: Date | null; ageManual: number | null },
   now: Date = new Date(),
