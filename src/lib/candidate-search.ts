@@ -27,7 +27,7 @@ export function buildCandidateWhere(
     if (f.key === "name") continue; // covered by quick search
 
     if (f.type === "number") {
-      const range: Prisma.IntFilter = {};
+      const range: { gte?: number; lte?: number } = {};
       const min = Number(params[`${f.key}Min`]);
       const max = Number(params[`${f.key}Max`]);
       if (params[`${f.key}Min`] && Number.isFinite(min)) range.gte = min;
