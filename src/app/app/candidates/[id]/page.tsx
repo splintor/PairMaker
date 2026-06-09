@@ -65,7 +65,7 @@ export default async function CandidateProfile({
             <div className="text-sm text-brand-600">
               {[
                 optionLabel(getField("gender")!, c.gender),
-                age != null ? `בן/בת ${age}` : null,
+                age != null ? `גיל ${age}` : null,
                 c.occupation,
               ].filter(Boolean).join(" · ")}
             </div>

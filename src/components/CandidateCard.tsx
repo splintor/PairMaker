@@ -6,7 +6,7 @@ import { StatusPill } from "@/components/ui";
 export function CandidateCard({ c }: { c: Candidate }) {
   const age = displayAge(c);
   const subtitleParts = [
-    age != null ? `בן/בת ${age}` : null,
+    age != null ? `גיל ${age}` : null,
     c.occupation,
     c.heightCm ? `${c.heightCm} ס"מ` : null,
   ].filter(Boolean);

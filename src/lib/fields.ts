@@ -21,7 +21,7 @@ export type FieldDef = {
 };
 
 export const GENDER_OPTIONS: FieldOption[] = [
-  { value: "male", label: "גבר" },
+  { value: "male", label: "איש" },
   { value: "female", label: "אישה" },
 ];
 

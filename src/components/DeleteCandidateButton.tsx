@@ -5,7 +5,7 @@ export function DeleteCandidateButton({ action }: { action: () => void }) {
     <form
       action={action}
       onSubmit={(e) => {
-        if (!confirm("למחוק את המועמד/ת לצמיתות? הפעולה תירשם ביומן השינויים.")) {
+        if (!confirm("למחוק את המועמד/ת לצמיתות?")) {
           e.preventDefault();
         }
       }}
