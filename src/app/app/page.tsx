@@ -9,7 +9,14 @@ export default async function Dashboard() {
       <p className="mt-2 text-sm text-slate-500">
         קהילה פעילה: {active?.communityName} · תפקיד: {ctx.role === "admin" ? "מנהל" : "חבר"}
       </p>
-      <p className="mt-4 text-sm text-slate-400">ניהול המועמדים יתווסף ב-M2.</p>
+      <div className="mt-4">
+        <a
+          href="/app/candidates"
+          className="inline-block rounded-lg bg-brand-500 px-4 py-2.5 font-medium text-white hover:bg-brand-600"
+        >
+          לניהול המועמדים →
+        </a>
+      </div>
     </div>
   );
 }

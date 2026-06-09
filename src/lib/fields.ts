@@ -81,13 +81,13 @@ export function optionLabel(field: FieldDef, value: string): string {
 
 export type BuiltInput = {
   columns: Record<string, string | number>;
-  details: Record<string, string | string[]>;
+  details: Record<string, string | number | string[]>;
   errors: Record<string, string>;
 };
 
 export function buildCandidateInput(raw: Record<string, unknown>): BuiltInput {
   const columns: Record<string, string | number> = {};
-  const details: Record<string, string | string[]> = {};
+  const details: Record<string, string | number | string[]> = {};
   const errors: Record<string, string> = {};
 
   for (const field of FIELDS) {
