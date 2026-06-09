@@ -1,5 +1,6 @@
 import { FIELDS, type FieldDef } from "@/lib/fields";
 import { PrimaryButton, LinkButton } from "@/components/ui";
+import { Select } from "@/components/Select";
 
 type Values = Record<string, string | number | null | undefined>;
 
@@ -9,14 +10,7 @@ function Input({ field, value }: { field: FieldDef; value: string }) {
     return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
   }
   if (field.type === "select") {
-    return (
-      <select name={field.key} dir="rtl" defaultValue={value} className={base}>
-        <option value="">—</option>
-        {field.options?.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    );
+    return <Select name={field.key} options={field.options ?? []} defaultValue={value} />;
   }
   return (
     <input

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DEACTIVATION_REASONS } from "@/lib/constants";
+import { Select } from "@/components/Select";
 
 export function DeactivateDialog({
   action,
@@ -30,19 +31,16 @@ export function DeactivateDialog({
           >
             <form action={action} className="space-y-3">
               <h2 className="font-bold text-brand-700">השבתת מועמד/ת</h2>
-              <label className="block text-sm text-slate-600">
+              <div className="block text-sm text-slate-600">
                 סיבה
-                <select
-                  name="reason"
-                  required
-                  dir="rtl"
-                  className="mt-1 w-full rounded-lg border border-brand-200 px-3 py-2"
-                >
-                  {DEACTIVATION_REASONS.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
-                </select>
-              </label>
+                <div className="mt-1">
+                  <Select
+                    name="reason"
+                    options={DEACTIVATION_REASONS}
+                    defaultValue={DEACTIVATION_REASONS[0].value}
+                  />
+                </div>
+              </div>
               <label className="block text-sm text-slate-600">
                 הערה (אופציונלי)
                 <textarea
