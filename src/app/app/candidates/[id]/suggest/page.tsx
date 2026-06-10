@@ -1,0 +1,80 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { requireMembership } from "@/lib/community";
+import { db } from "@/lib/db";
+import { SearchPanel } from "@/components/SearchPanel";
+import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
+import { oppositeGender } from "@/lib/suggestions";
+import { displayAge, ageLabel } from "@/lib/candidate-display";
+import { createSuggestion } from "@/app/app/matches/actions";
+
+export default async function SuggestPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const ctx = await requireMembership();
+  const { id } = await params;
+  const raw = await searchParams;
+
+  const source = await db.candidate.findFirst({ where: { id, communityId: ctx.communityId } });
+  if (!source) notFound();
+
+  const sp: SearchParams = {};
+  for (const [k, v] of Object.entries(raw)) sp[k] = Array.isArray(v) ? v[0] : v;
+  // Default to the opposite gender (matchmaker may still change it).
+  if (!sp.gender) sp.gender = oppositeGender(source.gender);
+
+  // Exclude self + already-suggested partners.
+  const existing = await db.suggestion.findMany({
+    where: { communityId: ctx.communityId, OR: [{ candidateAId: id }, { candidateBId: id }] },
+  });
+  const excluded = [id, ...existing.map((s) => (s.candidateAId === id ? s.candidateBId : s.candidateAId))];
+
+  const where = buildCandidateWhere(sp, ctx.communityId);
+  (where.AND as object[]).push({ id: { notIn: excluded } });
+  const matches = await db.candidate.findMany({ where, orderBy: { updatedAt: "desc" } });
+
+  return (
+    <div className="space-y-4">
+      <Link href={`/app/candidates/${id}`} className="text-sm text-brand-600">→ חזרה לפרופיל</Link>
+      <h1 className="text-xl font-bold text-brand-700">הצעת שידוך עבור {source.name}</h1>
+
+      <SearchPanel params={sp} />
+
+      <div className="text-sm text-slate-500">{matches.length} מועמדים אפשריים</div>
+
+      {matches.length === 0 ? (
+        <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-8 text-center text-slate-400">
+          אין מועמדים מתאימים (אולי כולם כבר הוצעו).
+        </p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {matches.map((m) => {
+            const suggest = createSuggestion.bind(null, id, m.id);
+            const age = displayAge(m);
+            return (
+              <div key={m.id} className="flex items-center justify-between rounded-xl2 border border-brand-200 bg-white p-4">
+                <div>
+                  <Link href={`/app/candidates/${m.id}`} className="font-bold text-brand-700 hover:underline">
+                    {m.name}
+                  </Link>
+                  <div className="text-xs text-brand-600">
+                    {[ageLabel(m.gender, age), m.occupation].filter(Boolean).join(" · ")}
+                  </div>
+                </div>
+                <form action={suggest}>
+                  <button className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                    הצע
+                  </button>
+                </form>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

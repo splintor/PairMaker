@@ -8,6 +8,7 @@ import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
 import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
+import { SuggestionItem } from "@/components/SuggestionItem";
 import {
   deactivateCandidate,
   reactivateCandidate,
@@ -26,6 +27,12 @@ export default async function CandidateProfile({
     include: { createdBy: true },
   });
   if (!c) notFound();
+
+  const suggestions = await db.suggestion.findMany({
+    where: { communityId: ctx.communityId, OR: [{ candidateAId: id }, { candidateBId: id }] },
+    include: { candidateA: true, candidateB: true },
+    orderBy: { updatedAt: "desc" },
+  });
 
   const details = (c.details as Record<string, unknown>) ?? {};
   const age = displayAge(c);
@@ -67,6 +74,9 @@ export default async function CandidateProfile({
             </div>
           </div>
           <div className="flex gap-2">
+            {c.status === "active" && (
+              <LinkButton href={`/app/candidates/${id}/suggest`}>+ הצעת שידוך</LinkButton>
+            )}
             <LinkButton href={`/app/candidates/${id}/edit`}>עריכה</LinkButton>
           </div>
         </div>
@@ -106,6 +116,17 @@ export default async function CandidateProfile({
           <DeleteCandidateButton action={deleteAction} />
         </div>
       </Card>
+
+      <div className="space-y-2">
+        <h2 className="text-lg font-bold text-brand-700">הצעות שידוך ({suggestions.length})</h2>
+        {suggestions.length === 0 ? (
+          <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-6 text-center text-sm text-slate-400">
+            אין הצעות עדיין.
+          </p>
+        ) : (
+          suggestions.map((s) => <SuggestionItem key={s.id} s={s} />)
+        )}
+      </div>
     </div>
   );
 }
