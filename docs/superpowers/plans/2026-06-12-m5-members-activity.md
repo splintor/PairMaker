@@ -104,8 +104,9 @@ export function describeAudit(e: AuditView): string {
     };
     if (m[e.action]) return m[e.action];
   }
-  if (e.entityType === "community" && e.action === "update") {
-    return `שם הקהילה עודכן ל-${L}`;
+  if (e.entityType === "community") {
+    if (e.action === "create") return `קהילה נוצרה: ${L}`;
+    if (e.action === "update") return `שם הקהילה עודכן ל-${L}`;
   }
   return `${e.entityType} · ${e.action}: ${e.entityLabel}`;
 }
@@ -598,7 +599,160 @@ git add -A && git commit -m "feat(m5): show הגדרות nav link to admins only
 
 ---
 
-## Task 7: Milestone verification
+## Task 7: Gated community creation (self-service + invite code)
+
+**Files:**
+- Create: `src/app/communities/new/actions.ts`
+- Create: `src/app/communities/new/page.tsx`
+- Modify: `src/app/no-community/page.tsx`
+- Modify: `.env.example` (+ set `COMMUNITY_INVITE_CODE` in `.env`)
+
+> A signed-in user (with or without a community) can create one by supplying a secret **invite code** the operator sets in `COMMUNITY_INVITE_CODE`. The creator becomes the community's admin, and the new community is set active. This route lives **outside** `/app` (its own membership-less guard) because users with no membership can't pass `requireMembership`.
+
+- [ ] **Step 1: Add the env var**
+
+Append to `.env.example`:
+```
+# Secret code required to create a new community (share with vetted operators)
+COMMUNITY_INVITE_CODE=""
+```
+Set a real value in `.env` before testing (e.g. `COMMUNITY_INVITE_CODE="let-me-in-2026"`).
+
+- [ ] **Step 2: Create-community action**
+
+Create `src/app/communities/new/actions.ts`:
+```ts
+"use server";
+
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { writeAudit } from "@/lib/audit";
+import { ACTIVE_COMMUNITY_COOKIE } from "@/lib/community";
+
+export async function createCommunity(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/signin");
+
+  const name = String(formData.get("name") ?? "").trim();
+  const code = String(formData.get("code") ?? "").trim();
+
+  const expected = process.env.COMMUNITY_INVITE_CODE;
+  if (!expected || code !== expected) redirect("/communities/new?error=code");
+  if (!name) redirect("/communities/new?error=name");
+
+  const community = await db.$transaction(async (tx) => {
+    const c = await tx.community.create({ data: { name } });
+    await tx.membership.create({
+      data: { userId: session.user.id, communityId: c.id, role: "admin" },
+    });
+    await writeAudit(tx, {
+      communityId: c.id,
+      entityType: "community",
+      entityId: c.id,
+      entityLabel: name,
+      action: "create",
+      actorId: session.user.id,
+    });
+    return c;
+  });
+
+  // Make the new community active.
+  (await cookies()).set(ACTIVE_COMMUNITY_COOKIE, community.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
+  revalidatePath("/app");
+  redirect("/app/candidates");
+}
+```
+
+- [ ] **Step 3: Create-community page**
+
+Create `src/app/communities/new/page.tsx`:
+```tsx
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { createCommunity } from "./actions";
+
+export default async function NewCommunityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/signin");
+  const { error } = await searchParams;
+
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-xl2 border border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 p-6 shadow-sm">
+        <h1 className="text-xl font-extrabold text-brand-700 text-center">קהילה חדשה</h1>
+        <p className="mt-1 mb-4 text-center text-sm text-brand-600">
+          ליצירת קהילה נדרש קוד הזמנה מהמפעיל.
+        </p>
+        {error === "code" && (
+          <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">קוד הזמנה שגוי.</p>
+        )}
+        {error === "name" && (
+          <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">יש להזין שם קהילה.</p>
+        )}
+        <form action={createCommunity} className="space-y-3">
+          <input name="name" type="text" dir="rtl" required placeholder="שם הקהילה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="code" type="text" dir="rtl" required placeholder="קוד הזמנה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <button className="w-full rounded-lg bg-brand-500 py-2.5 font-medium text-white hover:bg-brand-600">יצירה</button>
+        </form>
+      </div>
+    </main>
+  );
+}
+```
+
+- [ ] **Step 4: Offer creation from the no-community screen**
+
+Replace `src/app/no-community/page.tsx` with:
+```tsx
+import Link from "next/link";
+
+export default function NoCommunity() {
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6 text-center">
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-bold text-brand-700">אין לך קהילה עדיין</h1>
+          <p className="mt-2 text-sm text-slate-500">בקשו ממנהל/ת הקהילה להוסיף אתכם, או צרו קהילה חדשה.</p>
+        </div>
+        <Link
+          href="/communities/new"
+          className="inline-block rounded-lg bg-brand-500 px-4 py-2.5 font-medium text-white hover:bg-brand-600"
+        >
+          יצירת קהילה חדשה
+        </Link>
+      </div>
+    </main>
+  );
+}
+```
+
+- [ ] **Step 5: Build check**
+
+Run: `npm run build`
+Expected: success; `/communities/new` listed.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A && git commit -m "feat(m5): gated self-service community creation (invite code) + no-community CTA"
+```
+
+---
+
+## Task 8: Milestone verification
 
 - [ ] **Step 1: Unit tests**
 
@@ -619,6 +773,7 @@ Expected: success; routes include `/app/settings` and `/app/activity`.
 - **Change role**: switch a member to מנהל/ת and back.
 - **Last-admin guard**: try to remove/demote yourself as the only admin → blocked with the amber message.
 - **Activity log**: open "יומן פעילות" → recent actions render as Hebrew sentences with actor + time; filter by סוג=שידוכים or פעולה=מחיקה; the membership changes you just made appear.
+- **Community creation**: visit `/communities/new` → a wrong code is rejected; the correct `COMMUNITY_INVITE_CODE` + a name creates the community, makes you its admin, switches you into it, and lands you on its (empty) candidate list. The community switcher now lists both communities.
 
 - [ ] **Step 4: Verify membership audit entries**
 
@@ -651,7 +806,7 @@ git tag m5-members-activity
 ---
 
 ## Self-review checklist
-- Spec coverage: admin-only member add/edit/role/remove ✔; last-admin guard ✔; rename community (admin, audited) ✔; all member changes audited ✔; activity-log viewer with readable Hebrew + filters ✔; admin-only access on both screens (`requireCapability`) ✔; הגדרות nav gated to admins ✔.
+- Spec coverage: admin-only member add/edit/role/remove ✔; last-admin guard ✔; rename community (admin, audited) ✔; gated self-service community creation (invite code → creator becomes admin, audited) ✔; all changes audited ✔; activity-log viewer with readable Hebrew + filters ✔; admin-only access on both screens (`requireCapability`) ✔; הגדרות nav gated to admins ✔.
 - Type consistency: `requireCapability(action)` returns `ActiveContext`; `Role` from Prisma used in actions; `describeAudit` input shape matches the `AuditLog` fields selected.
 - Placeholder scan: none.
 
