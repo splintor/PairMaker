@@ -56,8 +56,11 @@ describe("describeAudit", () => {
     expect(describeAudit({ entityType: "membership", action: "create", entityLabel: "x@y.com" })).toContain("נוסף");
     expect(describeAudit({ entityType: "membership", action: "delete", entityLabel: "x@y.com" })).toContain("הוסר");
   });
+  it("community rename", () => {
+    expect(describeAudit({ entityType: "community", action: "update", entityLabel: "קהילה חדשה" })).toContain("שם הקהילה");
+  });
   it("falls back gracefully for unknown combos", () => {
-    expect(describeAudit({ entityType: "community", action: "update", entityLabel: "X" })).toContain("X");
+    expect(describeAudit({ entityType: "community", action: "delete", entityLabel: "X" })).toContain("X");
   });
 });
 ```
@@ -100,6 +103,9 @@ export function describeAudit(e: AuditView): string {
       delete: `חבר/ה הוסר/ה: ${e.entityLabel}`,
     };
     if (m[e.action]) return m[e.action];
+  }
+  if (e.entityType === "community" && e.action === "update") {
+    return `שם הקהילה עודכן ל-${L}`;
   }
   return `${e.entityType} · ${e.action}: ${e.entityLabel}`;
 }
@@ -168,6 +174,33 @@ import { writeAudit } from "@/lib/audit";
 
 function parseRole(v: FormDataEntryValue | null): Role {
   return String(v) === "admin" ? "admin" : "member";
+}
+
+export async function renameCommunity(formData: FormData) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/app/settings?error=name");
+
+  const existing = await db.community.findUnique({ where: { id: ctx.communityId } });
+  if (!existing || existing.name === name) redirect("/app/settings");
+
+  await db.$transaction(async (tx) => {
+    await tx.community.update({ where: { id: ctx.communityId }, data: { name } });
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "community",
+      entityId: ctx.communityId,
+      entityLabel: name,
+      action: "update",
+      actorId: ctx.userId,
+      changes: { name: { from: existing.name, to: name } },
+    });
+  });
+
+  revalidatePath("/app/settings");
+  redirect("/app/settings");
 }
 
 export async function addMember(formData: FormData) {
@@ -297,7 +330,7 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { Select } from "@/components/Select";
 import { PrimaryButton } from "@/components/ui";
-import { addMember, changeMemberRole, removeMember } from "./actions";
+import { addMember, changeMemberRole, removeMember, renameCommunity } from "./actions";
 
 const ROLE_OPTIONS = [
   { value: "member", label: "חבר/ה" },
@@ -312,16 +345,19 @@ export default async function SettingsPage({
   const ctx = await requireCapability("member:manage");
   const { error } = await searchParams;
 
-  const members = await db.membership.findMany({
-    where: { communityId: ctx.communityId },
-    include: { user: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const [community, members] = await Promise.all([
+    db.community.findUnique({ where: { id: ctx.communityId } }),
+    db.membership.findMany({
+      where: { communityId: ctx.communityId },
+      include: { user: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-brand-700">הגדרות · חברי הקהילה</h1>
+        <h1 className="text-xl font-bold text-brand-700">הגדרות</h1>
         <Link href="/app/activity" className="text-sm text-brand-600 hover:underline">
           יומן פעילות →
         </Link>
@@ -335,6 +371,19 @@ export default async function SettingsPage({
       {error === "email" && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">כתובת אימייל לא תקינה.</p>
       )}
+      {error === "name" && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">שם הקהילה לא יכול להיות ריק.</p>
+      )}
+
+      <form action={renameCommunity} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
+        <label className="flex-1">
+          <span className="mb-1 block text-sm text-slate-600">שם הקהילה</span>
+          <input name="name" type="text" dir="rtl" required defaultValue={community?.name ?? ""} className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+        </label>
+        <PrimaryButton>שמירה</PrimaryButton>
+      </form>
+
+      <h2 className="text-lg font-bold text-brand-700">חברי הקהילה</h2>
 
       <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
@@ -554,7 +603,7 @@ git add -A && git commit -m "feat(m5): show הגדרות nav link to admins only
 - [ ] **Step 1: Unit tests**
 
 Run: `npm test`
-Expected: all pass (M4's 35 + 4 new = 39).
+Expected: all pass (M4's 35 + 5 new = 40).
 
 - [ ] **Step 2: Build**
 
@@ -565,6 +614,7 @@ Expected: success; routes include `/app/settings` and `/app/activity`.
 
 `npm run dev`, sign in (splintor@gmail.com is admin):
 - **הגדרות** appears in the nav (admins only). Open it.
+- **Rename community**: change the name → save; confirm the **community switcher in the top bar** reflects the new name.
 - **Add member**: enter an email + role → appears in the list; signing in with that email later grants access.
 - **Change role**: switch a member to מנהל/ת and back.
 - **Last-admin guard**: try to remove/demote yourself as the only admin → blocked with the amber message.
@@ -601,7 +651,7 @@ git tag m5-members-activity
 ---
 
 ## Self-review checklist
-- Spec coverage: admin-only member add/edit/role/remove ✔; last-admin guard ✔; all member changes audited ✔; activity-log viewer with readable Hebrew + filters ✔; admin-only access on both screens (`requireCapability`) ✔; הגדרות nav gated to admins ✔.
+- Spec coverage: admin-only member add/edit/role/remove ✔; last-admin guard ✔; rename community (admin, audited) ✔; all member changes audited ✔; activity-log viewer with readable Hebrew + filters ✔; admin-only access on both screens (`requireCapability`) ✔; הגדרות nav gated to admins ✔.
 - Type consistency: `requireCapability(action)` returns `ActiveContext`; `Role` from Prisma used in actions; `describeAudit` input shape matches the `AuditLog` fields selected.
 - Placeholder scan: none.
 
