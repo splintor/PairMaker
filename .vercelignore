@@ -1,0 +1,4 @@
+# Never ship local env files to Vercel — prod values live in Vercel's env settings.
+# (.env carries NEXTAUTH_URL=localhost, which would override Auth.js host auto-detection.)
+.env
+.env.*
