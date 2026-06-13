@@ -49,7 +49,7 @@ export function SuggestionItem({ s }: { s: WithPair }) {
 
       <details className="mt-2">
         <summary className="cursor-pointer text-sm text-brand-600">עדכון</summary>
-        <form action={action} className="mt-2 space-y-2">
+        <form id={`sugg-${s.id}`} action={action} className="mt-2 space-y-2">
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="block text-sm text-slate-600">
               שלב
@@ -72,11 +72,15 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             placeholder="הערות"
             className="w-full rounded-lg border border-brand-200 px-3 py-2 text-right"
           />
-          <button className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+        </form>
+        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+          <button
+            type="submit"
+            form={`sugg-${s.id}`}
+            className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
+          >
             שמירה
           </button>
-        </form>
-        <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
           <DeleteSuggestionButton action={removeAction} />
         </div>
       </details>
