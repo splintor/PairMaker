@@ -1,5 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { buildCandidateWhere } from "./candidate-search";
+import { buildCandidateWhere, describeActiveFilters, paramsToQuery } from "./candidate-search";
+
+describe("describeActiveFilters", () => {
+  it("returns no chips for empty params", () => {
+    expect(describeActiveFilters({})).toEqual([]);
+  });
+  it("describes quick search", () => {
+    expect(describeActiveFilters({ q: "כהן" })).toEqual([{ removeKeys: ["q"], label: "חיפוש: כהן" }]);
+  });
+  it("uses the option label for selects", () => {
+    const chips = describeActiveFilters({ sector: "haredi" });
+    expect(chips).toEqual([{ removeKeys: ["sector"], label: "מגזר / זרם: חרדי" }]);
+  });
+  it("describes a number range and removes both bounds", () => {
+    const chips = describeActiveFilters({ ageManualMin: "28", ageManualMax: "34" });
+    expect(chips[0].removeKeys).toEqual(["ageManualMin", "ageManualMax"]);
+    expect(chips[0].label).toContain("28–34");
+  });
+  it("describes include-inactive", () => {
+    expect(describeActiveFilters({ inactive: "1" })).toEqual([
+      { removeKeys: ["inactive"], label: "כולל לא-פעילים" },
+    ]);
+  });
+});
+
+describe("paramsToQuery", () => {
+  it("omits given keys and empty values", () => {
+    const qs = paramsToQuery({ q: "x", gender: "female", sector: "" }, ["gender"]);
+    expect(qs).toBe("q=x");
+  });
+});
 
 const CID = "comm1";
 

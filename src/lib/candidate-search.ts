@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { SEARCHABLE_FIELDS } from "@/lib/fields";
+import { SEARCHABLE_FIELDS, optionLabel } from "@/lib/fields";
 
 export type SearchParams = Record<string, string | undefined>;
 
@@ -61,4 +61,46 @@ export function hasActiveFilters(params: SearchParams): boolean {
   return Object.entries(params).some(
     ([k, v]) => k !== "inactive" && typeof v === "string" && v.trim() !== "",
   );
+}
+
+export type FilterChip = { removeKeys: string[]; label: string };
+
+/** Human-readable chips for the active filters (what is currently being searched). */
+export function describeActiveFilters(params: SearchParams): FilterChip[] {
+  const chips: FilterChip[] = [];
+
+  const q = params.q?.trim();
+  if (q) chips.push({ removeKeys: ["q"], label: `חיפוש: ${q}` });
+
+  for (const f of SEARCHABLE_FIELDS) {
+    if (f.key === "name") continue;
+    if (f.type === "number") {
+      const min = params[`${f.key}Min`]?.trim();
+      const max = params[`${f.key}Max`]?.trim();
+      if (min || max) {
+        const range = min && max ? `${min}–${max}` : min ? `מ-${min}` : `עד ${max}`;
+        chips.push({ removeKeys: [`${f.key}Min`, `${f.key}Max`], label: `${f.label}: ${range}` });
+      }
+    } else {
+      const v = params[f.key]?.trim();
+      if (v) {
+        const display = f.options ? optionLabel(f, v) : v;
+        chips.push({ removeKeys: [f.key], label: `${f.label}: ${display}` });
+      }
+    }
+  }
+
+  if (params.inactive === "1") chips.push({ removeKeys: ["inactive"], label: "כולל לא-פעילים" });
+
+  return chips;
+}
+
+/** Serialize params back to a query string, omitting given keys and empty values. */
+export function paramsToQuery(params: SearchParams, omit: string[] = []): string {
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (omit.includes(k)) continue;
+    if (typeof v === "string" && v.trim()) usp.set(k, v);
+  }
+  return usp.toString();
 }
