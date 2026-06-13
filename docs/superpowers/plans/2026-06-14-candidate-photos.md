@@ -59,43 +59,42 @@ Record the confirmed calls; use them verbatim in Step 3 and Task 4.
 
 Create `src/lib/blob.ts` (adjust the three SDK calls to the API confirmed in Step 2):
 
+Confirmed against `@vercel/blob@2.4.0`: `put(..,{access:'private'})`, and `get(pathname,{access:'private'})` returns `{ statusCode, stream, blob:{contentType} }` — use the stream directly (cleaner than head+fetch). Store the **pathname** in `photoUrl`.
+
 ```ts
-import { put, head, del } from "@vercel/blob";
+import { put, get, del } from "@vercel/blob";
 
-const TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
+const token = process.env.BLOB_READ_WRITE_TOKEN;
 
-/** Store a candidate photo privately; returns the blob handle to persist in photoUrl. */
+/** Store a candidate photo privately; returns the blob pathname to persist in photoUrl. */
 export async function storeCandidatePhoto(
-  body: ArrayBuffer | Buffer,
+  body: ArrayBuffer,
   ext: string,
   contentType: string,
 ): Promise<string> {
-  const id = crypto.randomUUID();
-  const { url } = await put(`candidates/${id}.${ext}`, body, {
+  const { pathname } = await put(`candidates/${crypto.randomUUID()}.${ext}`, body, {
     access: "private",
-    token: TOKEN,
     contentType,
+    token,
   });
-  return url;
+  return pathname;
 }
 
-/** Fetch a private candidate photo's bytes + content type for streaming. */
+/** Fetch a private candidate photo as a stream + content type for serving. */
 export async function readCandidatePhoto(
-  handle: string,
-): Promise<{ body: ArrayBuffer; contentType: string } | null> {
-  const meta = await head(handle, { token: TOKEN });
-  if (!meta) return null;
-  const res = await fetch(meta.downloadUrl);
-  if (!res.ok) return null;
-  return { body: await res.arrayBuffer(), contentType: meta.contentType };
+  pathname: string,
+): Promise<{ stream: ReadableStream<Uint8Array>; contentType: string } | null> {
+  const res = await get(pathname, { access: "private", token });
+  if (!res || res.statusCode !== 200) return null;
+  return { stream: res.stream, contentType: res.blob.contentType };
 }
 
-/** Best-effort delete; never throws. */
-export async function deleteCandidatePhoto(handle: string): Promise<void> {
+/** Best-effort delete; never throws (an orphaned blob is acceptable). */
+export async function deleteCandidatePhoto(pathname: string): Promise<void> {
   try {
-    await del(handle, { token: TOKEN });
+    await del(pathname, { token });
   } catch {
-    /* orphaned blob is acceptable; don't block the mutation */
+    /* don't block the mutation on cleanup failure */
   }
 }
 ```
@@ -282,7 +281,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const photo = await readCandidatePhoto(candidate.photoUrl);
   if (!photo) return new NextResponse(null, { status: 404 });
 
-  return new NextResponse(photo.body, {
+  return new NextResponse(photo.stream, {
     headers: {
       "Content-Type": photo.contentType,
       "Cache-Control": "private, max-age=300",
