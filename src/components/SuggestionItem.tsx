@@ -8,12 +8,14 @@ import {
   outcomeLabel,
   statusIndex,
 } from "@/lib/suggestions";
-import { updateSuggestion } from "@/app/app/matches/actions";
+import { updateSuggestion, deleteSuggestion } from "@/app/app/matches/actions";
+import { DeleteSuggestionButton } from "@/components/DeleteSuggestionButton";
 
 type WithPair = Suggestion & { candidateA: Candidate; candidateB: Candidate };
 
 export function SuggestionItem({ s }: { s: WithPair }) {
   const action = updateSuggestion.bind(null, s.id);
+  const removeAction = deleteSuggestion.bind(null, s.id);
   const current = statusIndex(s.status);
 
   return (
@@ -74,6 +76,9 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             שמירה
           </button>
         </form>
+        <div className="mt-2 flex justify-end border-t border-slate-100 pt-2">
+          <DeleteSuggestionButton action={removeAction} />
+        </div>
       </details>
     </div>
   );
