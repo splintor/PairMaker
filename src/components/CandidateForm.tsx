@@ -1,6 +1,7 @@
 import { FIELDS, type FieldDef } from "@/lib/fields";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { Select } from "@/components/Select";
 
 type Values = Record<string, string | number | null | undefined>;
@@ -39,6 +40,11 @@ export function CandidateForm({
   const groups = [...new Set(FIELDS.map((f) => f.group ?? "כללי"))];
   return (
     <form action={action} className="space-y-6">
+      <PhotoPicker
+        name="photoUrl"
+        defaultPhotoUrl={typeof values.photoUrl === "string" ? values.photoUrl : null}
+        candidateId={typeof values.id === "string" ? values.id : undefined}
+      />
       {groups.map((group) => (
         <fieldset key={group} className="rounded-xl2 border border-brand-200 bg-white p-5">
           <legend className="px-2 text-sm font-bold text-brand-700">{group}</legend>

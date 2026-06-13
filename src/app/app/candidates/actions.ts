@@ -27,11 +27,14 @@ export async function createCandidate(formData: FormData) {
     redirect(`/app/candidates/new?error=validation`);
   }
 
+  const photoUrl = String(formData.get("photoUrl") ?? "").trim() || null;
+
   const created = await db.$transaction(async (tx) => {
     const c = await tx.candidate.create({
       data: {
         communityId: ctx.communityId,
         createdById: ctx.userId,
+        photoUrl,
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedCreateInput,
@@ -64,11 +67,15 @@ export async function updateCandidate(id: string, formData: FormData) {
     redirect(`/app/candidates/${id}/edit`);
   }
 
+  const photoUrl = String(formData.get("photoUrl") ?? "").trim() || null;
+  const oldPhotoUrl = existing.photoUrl;
+
   const beforeFlat = { ...existing, ...(existing.details as object) };
   await db.$transaction(async (tx) => {
     const updated = await tx.candidate.update({
       where: { id },
       data: {
+        photoUrl,
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedUpdateInput,
@@ -80,6 +87,7 @@ export async function updateCandidate(id: string, formData: FormData) {
     );
     delete changes.updatedAt;
     delete changes.details; // detail keys are already diffed individually; drop the redundant blob
+    delete changes.photoUrl; // blob handle — don't print in the activity log
     if (Object.keys(changes).length > 0) {
       await writeAudit(tx, {
         communityId: ctx.communityId,
@@ -92,6 +100,11 @@ export async function updateCandidate(id: string, formData: FormData) {
       });
     }
   });
+
+  if (oldPhotoUrl && oldPhotoUrl !== photoUrl) {
+    const { deleteCandidatePhoto } = await import("@/lib/blob");
+    await deleteCandidatePhoto(oldPhotoUrl);
+  }
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
@@ -177,6 +190,11 @@ export async function deleteCandidate(id: string) {
     });
     await tx.candidate.delete({ where: { id } });
   });
+
+  if (existing.photoUrl) {
+    const { deleteCandidatePhoto } = await import("@/lib/blob");
+    await deleteCandidatePhoto(existing.photoUrl);
+  }
 
   revalidatePath("/app/candidates");
   await setFlash({ type: "success", message: "המועמד/ת נמחק/ה" });

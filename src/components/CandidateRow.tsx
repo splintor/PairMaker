@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Candidate } from "@prisma/client";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { StatusPill } from "@/components/ui";
+import { CandidateAvatar } from "@/components/CandidateAvatar";
 
 export function CandidateRow({ c }: { c: Candidate }) {
   const age = displayAge(c);
@@ -17,9 +18,7 @@ export function CandidateRow({ c }: { c: Candidate }) {
       href={`/app/candidates/${c.id}`}
       className="flex items-center gap-3 rounded-lg border border-brand-200 bg-white px-4 py-3 hover:bg-brand-50"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-sm font-bold text-white">
-        {c.name.charAt(0)}
-      </div>
+      <CandidateAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} size="sm" />
       <div className="min-w-0 flex-1">
         <div className="font-medium text-brand-700">{c.name}</div>
         <div className="truncate text-xs text-slate-500">{parts.join(" · ")}</div>
