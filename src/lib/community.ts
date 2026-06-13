@@ -13,6 +13,8 @@ export { ACTIVE_COMMUNITY_COOKIE };
 
 export type ActiveContext = {
   userId: string;
+  userName: string | null;
+  userEmail: string | null;
   communityId: string;
   role: Role;
   memberships: { communityId: string; communityName: string; role: Role }[];
@@ -40,6 +42,8 @@ export async function requireMembership(): Promise<ActiveContext> {
 
   return {
     userId: session.user.id,
+    userName: session.user.name ?? null,
+    userEmail: session.user.email ?? null,
     communityId,
     role: active.role,
     memberships: rows.map((r) => ({
