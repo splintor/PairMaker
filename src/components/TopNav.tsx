@@ -14,9 +14,11 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
         <Link href="/app/matches" className="text-slate-500">
           שידוכים
         </Link>
-        <Link href="/app/settings" className="text-slate-500">
-          הגדרות
-        </Link>
+        {ctx.role === "admin" && (
+          <Link href="/app/settings" className="text-slate-500">
+            הגדרות
+          </Link>
+        )}
       </nav>
       <div className="flex items-center gap-3">
         <CommunitySwitcher
@@ -26,6 +28,15 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
           }))}
           activeId={ctx.communityId}
         />
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-sm font-bold text-white">
+            {(ctx.userName ?? ctx.userEmail ?? "?").charAt(0).toUpperCase()}
+          </div>
+          <div className="hidden text-right leading-tight sm:block">
+            <div className="text-sm font-medium text-slate-700">{ctx.userName ?? ctx.userEmail}</div>
+            <div className="text-xs text-slate-400">{ctx.role === "admin" ? "מנהל/ת" : "חבר/ה"}</div>
+          </div>
+        </div>
         <form
           action={async () => {
             "use server";
