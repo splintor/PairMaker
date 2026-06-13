@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
@@ -6,14 +5,10 @@ import { CandidateCard } from "@/components/CandidateCard";
 import { CandidateRow } from "@/components/CandidateRow";
 import { SearchPanel } from "@/components/SearchPanel";
 import { ViewToggle } from "@/components/ViewToggle";
+import { FilterChips } from "@/components/FilterChips";
 import { LinkButton } from "@/components/ui";
 import { CANDIDATE_VIEW_COOKIE, parseView } from "@/lib/view";
-import {
-  buildCandidateWhere,
-  describeActiveFilters,
-  paramsToQuery,
-  type SearchParams,
-} from "@/lib/candidate-search";
+import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 
 export default async function CandidatesPage({
   searchParams,
@@ -30,7 +25,6 @@ export default async function CandidatesPage({
   const where = buildCandidateWhere(params, ctx.communityId);
   const candidates = await db.candidate.findMany({ where, orderBy: { updatedAt: "desc" } });
 
-  const chips = describeActiveFilters(params);
   // Remount SearchPanel only when advanced filters change (keep focus while typing q).
   const advancedKey = Object.entries(params)
     .filter(([k]) => k !== "q")
@@ -47,26 +41,7 @@ export default async function CandidatesPage({
 
       <SearchPanel key={advancedKey} params={params} />
 
-      {chips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          {chips.map((chip) => {
-            const qs = paramsToQuery(params, chip.removeKeys);
-            return (
-              <Link
-                key={chip.removeKeys.join(",")}
-                href={qs ? `/app/candidates?${qs}` : "/app/candidates"}
-                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs text-brand-700 hover:bg-brand-100"
-              >
-                <span>{chip.label}</span>
-                <span className="text-brand-400">✕</span>
-              </Link>
-            );
-          })}
-          <Link href="/app/candidates" className="text-xs text-slate-400 hover:underline">
-            ניקוי הכל
-          </Link>
-        </div>
-      )}
+      <FilterChips params={params} basePath="/app/candidates" />
 
       <div className="flex items-center justify-between text-sm text-slate-500">
         <span>נמצאו {candidates.length} מועמדים</span>

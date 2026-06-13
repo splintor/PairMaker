@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { SearchPanel } from "@/components/SearchPanel";
+import { FilterChips } from "@/components/FilterChips";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 import { oppositeGender } from "@/lib/suggestions";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
@@ -43,6 +44,8 @@ export default async function SuggestPage({
       <h1 className="text-xl font-bold text-brand-700">הצעת שידוך עבור {source.name}</h1>
 
       <SearchPanel params={sp} />
+
+      <FilterChips params={sp} basePath={`/app/candidates/${id}/suggest`} exclude={["gender"]} />
 
       <div className="text-sm text-slate-500">{matches.length} מועמדים אפשריים</div>
 
