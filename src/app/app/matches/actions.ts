@@ -103,3 +103,37 @@ export async function updateSuggestion(id: string, formData: FormData) {
   revalidatePath(`/app/candidates/${existing.candidateBId}`);
   revalidatePath("/app/matches");
 }
+
+export async function deleteSuggestion(id: string) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "suggestion:manage")) throw new Error("forbidden");
+
+  const existing = await db.suggestion.findFirst({
+    where: { id, communityId: ctx.communityId },
+    include: { candidateA: true, candidateB: true },
+  });
+  if (!existing) redirect("/app/matches");
+
+  await db.$transaction(async (tx) => {
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "suggestion",
+      entityId: id,
+      entityLabel: `${existing.candidateA.name} ↔ ${existing.candidateB.name}`,
+      action: "delete",
+      actorId: ctx.userId,
+      snapshot: {
+        status: existing.status,
+        outcome: existing.outcome,
+        notes: existing.notes,
+        candidateAId: existing.candidateAId,
+        candidateBId: existing.candidateBId,
+      },
+    });
+    await tx.suggestion.delete({ where: { id } });
+  });
+
+  revalidatePath(`/app/candidates/${existing.candidateAId}`);
+  revalidatePath(`/app/candidates/${existing.candidateBId}`);
+  revalidatePath("/app/matches");
+}
