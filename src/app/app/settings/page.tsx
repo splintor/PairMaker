@@ -34,7 +34,7 @@ export default async function SettingsPage() {
       <form action={renameCommunity} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">שם הקהילה</span>
-          <input name="name" type="text" dir="rtl" required defaultValue={community?.name ?? ""} className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="name" type="text" dir="rtl" required defaultValue={community?.name ?? ""} className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <PendingButton>שמירה</PendingButton>
       </form>
@@ -44,7 +44,7 @@ export default async function SettingsPage() {
       <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">הוספת חבר/ה (אימייל)</span>
-          <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <div className="w-32">
           <span className="mb-1 block text-sm text-slate-600">תפקיד</span>

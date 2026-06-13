@@ -38,7 +38,7 @@ export default function SignInPage() {
             type="email"
             required
             placeholder="האימייל שלך"
-            className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right"
+            className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start"
           />
           <button className="w-full rounded-lg bg-brand-500 py-2.5 font-medium text-white hover:bg-brand-600">
             שליחת קישור כניסה

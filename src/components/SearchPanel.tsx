@@ -6,7 +6,7 @@ import { SEARCHABLE_FIELDS } from "@/lib/fields";
 import { Select } from "@/components/Select";
 import type { SearchParams } from "@/lib/candidate-search";
 
-const inputCls = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right";
+const inputCls = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start";
 
 function FilterControl({
   field,
@@ -126,7 +126,7 @@ export function SearchPanel({ params }: { params: SearchParams }) {
             defaultValue={params.q ?? ""}
             onChange={onQuickChange}
             placeholder="חיפוש מהיר (שם, עיסוק, עיר)…"
-            className="flex-1 bg-transparent text-right outline-none"
+            className="flex-1 bg-transparent text-start outline-none"
           />
           {/* advanced-search toggle */}
           <button

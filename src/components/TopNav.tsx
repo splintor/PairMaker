@@ -41,7 +41,7 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-sm font-bold text-white">
             {(ctx.userName ?? ctx.userEmail ?? "?").charAt(0).toUpperCase()}
           </div>
-          <div className="text-right leading-tight">
+          <div className="text-start leading-tight">
             <div className="text-sm font-medium text-slate-700">{ctx.userName ?? ctx.userEmail}</div>
             <div className="text-xs text-slate-400">{ctx.role === "admin" ? "מנהל/ת" : "חבר/ה"}</div>
           </div>

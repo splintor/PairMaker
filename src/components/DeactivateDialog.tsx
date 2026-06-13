@@ -27,7 +27,7 @@ export function DeactivateDialog({
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-80 rounded-xl2 bg-white p-5 text-right shadow-lg"
+            className="w-80 rounded-xl2 bg-white p-5 text-start shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <form action={action} className="space-y-3">

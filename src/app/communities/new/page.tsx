@@ -15,8 +15,8 @@ export default async function NewCommunityPage() {
           ליצירת קהילה נדרש קוד הזמנה מהמפעיל.
         </p>
         <form action={createCommunity} className="space-y-3">
-          <input name="name" type="text" dir="rtl" required placeholder="שם הקהילה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
-          <input name="code" type="text" dir="rtl" required placeholder="קוד הזמנה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="name" type="text" dir="rtl" required placeholder="שם הקהילה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
+          <input name="code" type="text" dir="rtl" required placeholder="קוד הזמנה" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
           <PendingButton className="w-full rounded-lg bg-brand-500 py-2.5 font-medium text-white hover:bg-brand-600 disabled:opacity-60">יצירה</PendingButton>
         </form>
       </div>

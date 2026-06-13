@@ -6,7 +6,7 @@ import { Select } from "@/components/Select";
 type Values = Record<string, string | number | null | undefined>;
 
 function Input({ field, value }: { field: FieldDef; value: string }) {
-  const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right";
+  const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start";
   if (field.type === "longtext") {
     return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
   }

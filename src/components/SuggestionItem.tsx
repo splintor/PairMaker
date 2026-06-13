@@ -70,7 +70,7 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             rows={2}
             defaultValue={s.notes ?? ""}
             placeholder="הערות"
-            className="w-full rounded-lg border border-brand-200 px-3 py-2 text-right"
+            className="w-full rounded-lg border border-brand-200 px-3 py-2 text-start"
           />
         </form>
         <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
