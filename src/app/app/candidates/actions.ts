@@ -60,7 +60,8 @@ export async function updateCandidate(id: string, formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const { columns, details, errors } = buildCandidateInput(raw);
   if (Object.keys(errors).length > 0) {
-    redirect(`/app/candidates/${id}/edit?error=validation`);
+    await setFlash({ type: "error", message: "יש לתקן את השדות המסומנים" });
+    redirect(`/app/candidates/${id}/edit`);
   }
 
   const beforeFlat = { ...existing, ...(existing.details as object) };
@@ -94,6 +95,7 @@ export async function updateCandidate(id: string, formData: FormData) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "הפרטים נשמרו" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -128,6 +130,7 @@ export async function deactivateCandidate(id: string, formData: FormData) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת סומן/ה כלא פעיל/ה" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -153,6 +156,7 @@ export async function reactivateCandidate(id: string) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת הוחזר/ה לפעילות" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -175,5 +179,6 @@ export async function deleteCandidate(id: string) {
   });
 
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת נמחק/ה" });
   redirect("/app/candidates");
 }

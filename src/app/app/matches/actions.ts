@@ -9,6 +9,7 @@ import { can } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
 import { computeChanges } from "@/lib/audit-diff";
 import { makePairKey } from "@/lib/suggestions";
+import { setFlash } from "@/lib/flash-server";
 
 export async function createSuggestion(candidateAId: string, candidateBId: string) {
   const ctx = await requireMembership();
@@ -25,7 +26,10 @@ export async function createSuggestion(candidateAId: string, candidateBId: strin
   const existing = await db.suggestion.findFirst({
     where: { communityId: ctx.communityId, pairKey },
   });
-  if (existing) redirect(`/app/matches#${existing.id}`);
+  if (existing) {
+    await setFlash({ type: "error", message: "הצעה זו כבר קיימת" });
+    redirect(`/app/matches#${existing.id}`);
+  }
 
   try {
     await db.$transaction(async (tx) => {
@@ -50,6 +54,7 @@ export async function createSuggestion(candidateAId: string, candidateBId: strin
   } catch (e) {
     // Unique pairKey violation (race) — treat as already-suggested.
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      await setFlash({ type: "error", message: "הצעה זו כבר קיימת" });
       redirect("/app/matches");
     }
     throw e;
@@ -58,6 +63,7 @@ export async function createSuggestion(candidateAId: string, candidateBId: strin
   revalidatePath(`/app/candidates/${a.id}`);
   revalidatePath(`/app/candidates/${b.id}`);
   revalidatePath("/app/matches");
+  await setFlash({ type: "success", message: "הצעת השידוך נוצרה" });
   redirect(`/app/candidates/${candidateAId}`);
 }
 

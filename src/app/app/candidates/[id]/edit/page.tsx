@@ -6,14 +6,11 @@ import { updateCandidate } from "@/app/app/candidates/actions";
 
 export default async function EditCandidatePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
 }) {
   const ctx = await requireMembership();
   const { id } = await params;
-  const { error } = await searchParams;
   const c = await db.candidate.findFirst({ where: { id, communityId: ctx.communityId } });
   if (!c) notFound();
 
@@ -28,7 +25,6 @@ export default async function EditCandidatePage({
         values={values as Record<string, string | number | null | undefined>}
         submitLabel="שמירה"
         cancelHref={`/app/candidates/${id}`}
-        hasError={error === "validation"}
       />
     </div>
   );

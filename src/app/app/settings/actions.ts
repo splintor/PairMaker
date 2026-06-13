@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { requireMembership } from "@/lib/community";
 import { can } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
+import { setFlash } from "@/lib/flash-server";
 
 function parseRole(v: FormDataEntryValue | null): Role {
   return String(v) === "admin" ? "admin" : "member";
@@ -17,7 +18,10 @@ export async function renameCommunity(formData: FormData) {
   if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
 
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) redirect("/app/settings?error=name");
+  if (!name) {
+    await setFlash({ type: "error", message: "יש להזין שם" });
+    redirect("/app/settings");
+  }
 
   const existing = await db.community.findUnique({ where: { id: ctx.communityId } });
   if (!existing || existing.name === name) redirect("/app/settings");
@@ -36,6 +40,7 @@ export async function renameCommunity(formData: FormData) {
   });
 
   revalidatePath("/app/settings");
+  await setFlash({ type: "success", message: "שם הקהילה עודכן" });
   redirect("/app/settings");
 }
 
@@ -45,7 +50,10 @@ export async function addMember(formData: FormData) {
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = parseRole(formData.get("role"));
-  if (!email || !email.includes("@")) redirect("/app/settings?error=email");
+  if (!email || !email.includes("@")) {
+    await setFlash({ type: "error", message: "כתובת אימייל לא תקינה" });
+    redirect("/app/settings");
+  }
 
   await db.$transaction(async (tx) => {
     const user = await tx.user.upsert({ where: { email }, update: {}, create: { email } });
@@ -68,6 +76,7 @@ export async function addMember(formData: FormData) {
   });
 
   revalidatePath("/app/settings");
+  await setFlash({ type: "success", message: "החבר/ה נוסף/ה" });
   redirect("/app/settings");
 }
 
@@ -86,7 +95,10 @@ export async function changeMemberRole(membershipId: string, formData: FormData)
   // Last-admin guard: don't demote the final admin.
   if (m.role === "admin" && role === "member") {
     const admins = await db.membership.count({ where: { communityId: ctx.communityId, role: "admin" } });
-    if (admins <= 1) redirect("/app/settings?error=lastadmin");
+    if (admins <= 1) {
+      await setFlash({ type: "error", message: "חייב להישאר לפחות מנהל/ת אחד/ת" });
+      redirect("/app/settings");
+    }
   }
 
   await db.$transaction(async (tx) => {
@@ -103,6 +115,7 @@ export async function changeMemberRole(membershipId: string, formData: FormData)
   });
 
   revalidatePath("/app/settings");
+  await setFlash({ type: "success", message: "ההרשאה עודכנה" });
   redirect("/app/settings");
 }
 
@@ -118,7 +131,10 @@ export async function removeMember(membershipId: string) {
 
   if (m.role === "admin") {
     const admins = await db.membership.count({ where: { communityId: ctx.communityId, role: "admin" } });
-    if (admins <= 1) redirect("/app/settings?error=lastadmin");
+    if (admins <= 1) {
+      await setFlash({ type: "error", message: "חייב להישאר לפחות מנהל/ת אחד/ת" });
+      redirect("/app/settings");
+    }
   }
 
   await db.$transaction(async (tx) => {
@@ -135,5 +151,6 @@ export async function removeMember(membershipId: string) {
   });
 
   revalidatePath("/app/settings");
+  await setFlash({ type: "success", message: "החבר/ה הוסר/ה" });
   redirect("/app/settings");
 }

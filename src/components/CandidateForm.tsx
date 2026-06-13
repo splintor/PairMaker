@@ -29,22 +29,15 @@ export function CandidateForm({
   values = {},
   submitLabel,
   cancelHref,
-  hasError = false,
 }: {
   action: (formData: FormData) => void;
   values?: Values;
   submitLabel: string;
   cancelHref: string;
-  hasError?: boolean;
 }) {
   const groups = [...new Set(FIELDS.map((f) => f.group ?? "כללי"))];
   return (
     <form action={action} className="space-y-6">
-      {hasError && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          נא לתקן את השדות המסומנים (שדות חובה / ערכים לא תקינים).
-        </p>
-      )}
       {groups.map((group) => (
         <fieldset key={group} className="rounded-xl2 border border-brand-200 bg-white p-5">
           <legend className="px-2 text-sm font-bold text-brand-700">{group}</legend>

@@ -2,13 +2,8 @@ import { requireMembership } from "@/lib/community";
 import { CandidateForm } from "@/components/CandidateForm";
 import { createCandidate } from "@/app/app/candidates/actions";
 
-export default async function NewCandidatePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
+export default async function NewCandidatePage() {
   await requireMembership();
-  const { error } = await searchParams;
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-brand-700">מועמד חדש</h1>
@@ -16,7 +11,6 @@ export default async function NewCandidatePage({
         action={createCandidate}
         submitLabel="הוספה"
         cancelHref="/app/candidates"
-        hasError={error === "validation"}
       />
     </div>
   );

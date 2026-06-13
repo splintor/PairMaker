@@ -10,13 +10,8 @@ const ROLE_OPTIONS = [
   { value: "admin", label: "מנהל/ת" },
 ];
 
-export default async function SettingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
+export default async function SettingsPage() {
   const ctx = await requireCapability("member:manage");
-  const { error } = await searchParams;
 
   const [community, members] = await Promise.all([
     db.community.findUnique({ where: { id: ctx.communityId } }),
@@ -35,18 +30,6 @@ export default async function SettingsPage({
           יומן פעילות →
         </Link>
       </div>
-
-      {error === "lastadmin" && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          לא ניתן להסיר או לשנות את המנהל/ת האחרון/ה בקהילה.
-        </p>
-      )}
-      {error === "email" && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">כתובת אימייל לא תקינה.</p>
-      )}
-      {error === "name" && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">שם הקהילה לא יכול להיות ריק.</p>
-      )}
 
       <form action={renameCommunity} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
