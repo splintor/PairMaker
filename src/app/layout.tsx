@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Match Maker",
+  title: "PairMaker",
   description: "מערכת ניהול מועמדים לשידוך",
 };
 

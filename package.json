@@ -1,5 +1,5 @@
 {
-  "name": "match-maker",
+  "name": "pairmaker",
   "version": "0.1.0",
   "private": true,
   "prisma": {
