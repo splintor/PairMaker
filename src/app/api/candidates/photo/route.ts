@@ -21,10 +21,15 @@ export async function POST(req: Request) {
   const check = validatePhotoUpload({ type: file.type, size: file.size });
   if (!check.ok) return NextResponse.json({ error: check.message }, { status: 400 });
 
-  const handle = await storeCandidatePhoto(
-    await file.arrayBuffer(),
-    extForType(file.type),
-    file.type,
-  );
-  return NextResponse.json({ handle });
+  try {
+    const handle = await storeCandidatePhoto(
+      await file.arrayBuffer(),
+      extForType(file.type),
+      file.type,
+    );
+    return NextResponse.json({ handle });
+  } catch (err) {
+    console.error("[photo upload] blob store failed:", err);
+    return NextResponse.json({ error: "אחסון התמונות אינו זמין כעת" }, { status: 500 });
+  }
 }
