@@ -99,6 +99,17 @@ export function SearchPanel({ params }: { params: SearchParams }) {
     return () => document.removeEventListener("mousedown", onDoc);
   }, [advancedOpen]);
 
+  // Lock body scroll while the filters drawer is open on mobile.
+  useEffect(() => {
+    if (!advancedOpen) return;
+    if (typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [advancedOpen]);
+
   return (
     <div ref={containerRef} className="relative">
       <form ref={formRef} onSubmit={onSubmit}>
@@ -134,8 +145,23 @@ export function SearchPanel({ params }: { params: SearchParams }) {
           </button>
         </div>
 
+        {advancedOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/30 md:hidden"
+            onClick={() => setAdvancedOpen(false)}
+            aria-hidden
+          />
+        )}
         <div
-          className={`absolute z-30 mt-1 w-full rounded-xl2 border border-brand-200 bg-white p-4 shadow-lg ${advancedOpen ? "" : "hidden"}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="סינון מתקדם"
+          className={
+            advancedOpen
+              ? "fixed inset-y-0 right-0 z-40 w-80 max-w-[85%] overflow-auto bg-white p-4 shadow-xl " +
+                "md:absolute md:inset-auto md:right-0 md:z-30 md:mt-1 md:w-full md:overflow-visible md:rounded-xl2 md:border md:border-brand-200 md:shadow-lg"
+              : "hidden"
+          }
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {advancedFields.map((f) => (
