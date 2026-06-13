@@ -1,5 +1,7 @@
 "use client";
 
+import { PendingButton } from "@/components/PendingButton";
+
 export function DeleteCandidateButton({ action }: { action: () => void }) {
   return (
     <form
@@ -10,7 +12,9 @@ export function DeleteCandidateButton({ action }: { action: () => void }) {
         }
       }}
     >
-      <button className="text-sm text-red-600 hover:underline">מחיקה</button>
+      <PendingButton className="text-sm text-red-600 hover:underline disabled:opacity-60">
+        מחיקה
+      </PendingButton>
     </form>
   );
 }

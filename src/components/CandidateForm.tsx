@@ -1,5 +1,6 @@
 import { FIELDS, type FieldDef } from "@/lib/fields";
-import { PrimaryButton, LinkButton } from "@/components/ui";
+import { LinkButton } from "@/components/ui";
+import { PendingButton } from "@/components/PendingButton";
 import { Select } from "@/components/Select";
 
 type Values = Record<string, string | number | null | undefined>;
@@ -55,7 +56,7 @@ export function CandidateForm({
         </fieldset>
       ))}
       <div className="flex gap-3">
-        <PrimaryButton>{submitLabel}</PrimaryButton>
+        <PendingButton>{submitLabel}</PendingButton>
         <LinkButton href={cancelHref}>ביטול</LinkButton>
       </div>
     </form>
