@@ -14,9 +14,11 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
         <Link href="/app/matches" className="text-slate-500">
           שידוכים
         </Link>
-        <Link href="/app/settings" className="text-slate-500">
-          הגדרות
-        </Link>
+        {ctx.role === "admin" && (
+          <Link href="/app/settings" className="text-slate-500">
+            הגדרות
+          </Link>
+        )}
       </nav>
       <div className="flex items-center gap-3">
         <CommunitySwitcher
