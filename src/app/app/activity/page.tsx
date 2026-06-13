@@ -3,6 +3,8 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { describeAudit, auditHref } from "@/lib/audit-format";
 import { ActivityFilters } from "@/components/ActivityFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { LinkButton } from "@/components/ui";
 
 function fmtTime(d: Date): string {
   return d.toISOString().slice(0, 16).replace("T", " ");
@@ -41,7 +43,14 @@ export default async function ActivityPage({
         <p className="text-xs text-slate-400">מוצגות {LIMIT} הרשומות האחרונות.</p>
       )}
 
-      <ul className="space-y-2">
+      {logs.length === 0 ? (
+        <EmptyState
+          icon="📋"
+          title="אין רשומות התואמות את הסינון"
+          action={<LinkButton href="/app/activity">נקה סינון</LinkButton>}
+        />
+      ) : (
+        <ul className="space-y-2">
         {logs.map((l) => {
           const changes = (l.changes as Record<string, { from: unknown; to: unknown }> | null) ?? null;
           const parts = describeAudit(l);
@@ -77,12 +86,8 @@ export default async function ActivityPage({
             </li>
           );
         })}
-        {logs.length === 0 && (
-          <li className="rounded-xl2 border border-dashed border-brand-200 bg-white p-8 text-center text-slate-400">
-            אין רשומות התואמות את הסינון.
-          </li>
-        )}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 }

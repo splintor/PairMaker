@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { Select } from "@/components/Select";
-import { PrimaryButton } from "@/components/ui";
+import { PendingButton } from "@/components/PendingButton";
 import { addMember, changeMemberRole, removeMember, renameCommunity } from "./actions";
 
 const ROLE_OPTIONS = [
@@ -10,13 +10,8 @@ const ROLE_OPTIONS = [
   { value: "admin", label: "מנהל/ת" },
 ];
 
-export default async function SettingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
+export default async function SettingsPage() {
   const ctx = await requireCapability("member:manage");
-  const { error } = await searchParams;
 
   const [community, members] = await Promise.all([
     db.community.findUnique({ where: { id: ctx.communityId } }),
@@ -36,24 +31,12 @@ export default async function SettingsPage({
         </Link>
       </div>
 
-      {error === "lastadmin" && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          לא ניתן להסיר או לשנות את המנהל/ת האחרון/ה בקהילה.
-        </p>
-      )}
-      {error === "email" && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">כתובת אימייל לא תקינה.</p>
-      )}
-      {error === "name" && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">שם הקהילה לא יכול להיות ריק.</p>
-      )}
-
       <form action={renameCommunity} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">שם הקהילה</span>
-          <input name="name" type="text" dir="rtl" required defaultValue={community?.name ?? ""} className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="name" type="text" dir="rtl" required defaultValue={community?.name ?? ""} className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
-        <PrimaryButton>שמירה</PrimaryButton>
+        <PendingButton>שמירה</PendingButton>
       </form>
 
       <h2 className="text-lg font-bold text-brand-700">חברי הקהילה</h2>
@@ -61,13 +44,13 @@ export default async function SettingsPage({
       <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">הוספת חבר/ה (אימייל)</span>
-          <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right" />
+          <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <div className="w-32">
           <span className="mb-1 block text-sm text-slate-600">תפקיד</span>
           <Select name="role" options={ROLE_OPTIONS} defaultValue="member" />
         </div>
-        <PrimaryButton>הוספה</PrimaryButton>
+        <PendingButton>הוספה</PendingButton>
       </form>
 
       <div className="space-y-2">
@@ -80,10 +63,10 @@ export default async function SettingsPage({
             <div className="flex items-center gap-2">
               <form action={changeMemberRole.bind(null, m.id)} className="w-32">
                 <Select name="role" options={ROLE_OPTIONS} defaultValue={m.role} />
-                <button className="mt-1 text-xs text-brand-600 hover:underline">עדכון תפקיד</button>
+                <PendingButton className="mt-1 text-xs text-brand-600 hover:underline disabled:opacity-60">עדכון תפקיד</PendingButton>
               </form>
               <form action={removeMember.bind(null, m.id)}>
-                <button className="text-sm text-red-600 hover:underline">הסרה</button>
+                <PendingButton className="text-sm text-red-600 hover:underline disabled:opacity-60">הסרה</PendingButton>
               </form>
             </div>
           </div>

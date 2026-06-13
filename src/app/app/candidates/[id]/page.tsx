@@ -7,6 +7,7 @@ import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
+import { EmptyState } from "@/components/EmptyState";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
 import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
 import { SuggestionItem } from "@/components/SuggestionItem";
@@ -123,9 +124,17 @@ export default async function CandidateProfile({
       <div className="space-y-2">
         <h2 className="text-lg font-bold text-brand-700">הצעות שידוך ({suggestions.length})</h2>
         {suggestions.length === 0 ? (
-          <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-6 text-center text-sm text-slate-400">
-            אין הצעות עדיין.
-          </p>
+          <EmptyState
+            icon="💡"
+            title="אין הצעות עדיין"
+            action={
+              c.status === "active" ? (
+                <LinkButton href={`/app/candidates/${id}/suggest?gender=${oppositeGender(c.gender)}`}>
+                  + הצע שידוך
+                </LinkButton>
+              ) : undefined
+            }
+          />
         ) : (
           suggestions.map((s) => <SuggestionItem key={s.id} s={s} />)
         )}

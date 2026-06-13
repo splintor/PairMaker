@@ -34,13 +34,26 @@ export function Select({
   const selected = options.find((o) => o.value === value);
   const items: SelectOption[] = [{ value: "", label: placeholder }, ...options];
 
+  function onTriggerKey(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setOpen(true);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  }
+
   return (
     <div ref={ref} className="relative" dir="rtl">
       <input type="hidden" name={name} value={value} />
       <button
         type="button"
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between rounded-lg border border-brand-200 px-3 py-2.5 text-right"
+        onKeyDown={onTriggerKey}
+        className="flex w-full items-center justify-between rounded-lg border border-brand-200 px-3 py-2.5 text-start"
       >
         <span className={selected ? "text-slate-800" : "text-slate-400"}>
           {selected ? selected.label : placeholder}
@@ -49,18 +62,21 @@ export function Select({
       </button>
 
       {open && (
-        <ul className="absolute right-0 z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-brand-200 bg-white py-1 text-right shadow-lg">
+        <ul
+          role="listbox"
+          className="absolute right-0 z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-brand-200 bg-white py-1 text-start shadow-lg"
+        >
           {items.map((o) => {
             const isSelected = o.value === value;
             return (
-              <li key={o.value || "__empty"}>
+              <li key={o.value || "__empty"} role="option" aria-selected={isSelected}>
                 <button
                   type="button"
                   onClick={() => {
                     setValue(o.value);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-right hover:bg-brand-50 ${
+                  className={`flex w-full items-center justify-between px-3 py-2 text-start hover:bg-brand-50 ${
                     isSelected ? "bg-brand-50 text-brand-700" : ""
                   } ${o.value ? "" : "text-slate-400"}`}
                 >

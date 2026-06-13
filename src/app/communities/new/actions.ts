@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { writeAudit } from "@/lib/audit";
 import { ACTIVE_COMMUNITY_COOKIE } from "@/lib/community";
+import { setFlash } from "@/lib/flash-server";
 
 export async function createCommunity(formData: FormData) {
   const session = await auth();
@@ -16,8 +17,14 @@ export async function createCommunity(formData: FormData) {
   const code = String(formData.get("code") ?? "").trim();
 
   const expected = process.env.COMMUNITY_INVITE_CODE;
-  if (!expected || code !== expected) redirect("/communities/new?error=code");
-  if (!name) redirect("/communities/new?error=name");
+  if (!expected || code !== expected) {
+    await setFlash({ type: "error", message: "קוד הזמנה שגוי" });
+    redirect("/communities/new");
+  }
+  if (!name) {
+    await setFlash({ type: "error", message: "יש להזין שם קהילה" });
+    redirect("/communities/new");
+  }
 
   const community = await db.$transaction(async (tx) => {
     const c = await tx.community.create({ data: { name } });
@@ -44,5 +51,6 @@ export async function createCommunity(formData: FormData) {
   });
 
   revalidatePath("/app");
+  await setFlash({ type: "success", message: "הקהילה נוצרה" });
   redirect("/app/candidates");
 }

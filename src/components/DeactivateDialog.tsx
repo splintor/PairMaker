@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { DEACTIVATION_REASONS } from "@/lib/constants";
 import { Select } from "@/components/Select";
+import { PendingButton } from "@/components/PendingButton";
 
 export function DeactivateDialog({
   action,
@@ -26,7 +27,7 @@ export function DeactivateDialog({
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-80 rounded-xl2 bg-white p-5 text-right shadow-lg"
+            className="w-80 rounded-xl2 bg-white p-5 text-start shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <form action={action} className="space-y-3">
@@ -50,9 +51,9 @@ export function DeactivateDialog({
                 />
               </label>
               <div className="flex gap-2">
-                <button className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white hover:bg-amber-700">
+                <PendingButton className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-60">
                   אישור
-                </button>
+                </PendingButton>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}

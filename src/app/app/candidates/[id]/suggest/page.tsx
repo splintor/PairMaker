@@ -4,6 +4,8 @@ import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { SearchPanel } from "@/components/SearchPanel";
 import { FilterChips } from "@/components/FilterChips";
+import { EmptyState } from "@/components/EmptyState";
+import { LinkButton } from "@/components/ui";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { createSuggestion } from "@/app/app/matches/actions";
@@ -54,9 +56,12 @@ export default async function SuggestPage({
       <div className="text-sm text-slate-500">{matches.length} מועמדים אפשריים</div>
 
       {matches.length === 0 ? (
-        <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-8 text-center text-slate-400">
-          אין מועמדים מתאימים (אולי כולם כבר הוצעו).
-        </p>
+        <EmptyState
+          icon="🤝"
+          title="אין מועמדים מתאימים"
+          hint="אולי כולם כבר הוצעו — נסו לנקות את הסינון"
+          action={<LinkButton href={`/app/candidates/${id}/suggest`}>נקה סינון</LinkButton>}
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {matches.map((m) => {

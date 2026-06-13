@@ -1,11 +1,12 @@
 import { FIELDS, type FieldDef } from "@/lib/fields";
-import { PrimaryButton, LinkButton } from "@/components/ui";
+import { LinkButton } from "@/components/ui";
+import { PendingButton } from "@/components/PendingButton";
 import { Select } from "@/components/Select";
 
 type Values = Record<string, string | number | null | undefined>;
 
 function Input({ field, value }: { field: FieldDef; value: string }) {
-  const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-right";
+  const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start";
   if (field.type === "longtext") {
     return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
   }
@@ -29,22 +30,15 @@ export function CandidateForm({
   values = {},
   submitLabel,
   cancelHref,
-  hasError = false,
 }: {
   action: (formData: FormData) => void;
   values?: Values;
   submitLabel: string;
   cancelHref: string;
-  hasError?: boolean;
 }) {
   const groups = [...new Set(FIELDS.map((f) => f.group ?? "כללי"))];
   return (
     <form action={action} className="space-y-6">
-      {hasError && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          נא לתקן את השדות המסומנים (שדות חובה / ערכים לא תקינים).
-        </p>
-      )}
       {groups.map((group) => (
         <fieldset key={group} className="rounded-xl2 border border-brand-200 bg-white p-5">
           <legend className="px-2 text-sm font-bold text-brand-700">{group}</legend>
@@ -62,7 +56,7 @@ export function CandidateForm({
         </fieldset>
       ))}
       <div className="flex gap-3">
-        <PrimaryButton>{submitLabel}</PrimaryButton>
+        <PendingButton>{submitLabel}</PendingButton>
         <LinkButton href={cancelHref}>ביטול</LinkButton>
       </div>
     </form>

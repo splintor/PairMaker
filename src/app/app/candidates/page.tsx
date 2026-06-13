@@ -6,6 +6,7 @@ import { CandidateRow } from "@/components/CandidateRow";
 import { SearchPanel } from "@/components/SearchPanel";
 import { ViewToggle } from "@/components/ViewToggle";
 import { FilterChips } from "@/components/FilterChips";
+import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 import { CANDIDATE_VIEW_COOKIE, parseView } from "@/lib/view";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
@@ -49,9 +50,20 @@ export default async function CandidatesPage({
       </div>
 
       {candidates.length === 0 ? (
-        <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-8 text-center text-slate-400">
-          לא נמצאו מועמדים התואמים את החיפוש.
-        </p>
+        Object.keys(params).length > 0 ? (
+          <EmptyState
+            icon="🔍"
+            title="לא נמצאו מועמדים התואמים את החיפוש"
+            action={<LinkButton href="/app/candidates">נקה סינון</LinkButton>}
+          />
+        ) : (
+          <EmptyState
+            icon="👤"
+            title="אין עדיין מועמדים"
+            hint="הוסף את המועמד הראשון כדי להתחיל"
+            action={<LinkButton href="/app/candidates/new">+ הוסף מועמד</LinkButton>}
+          />
+        )
       ) : view === "list" ? (
         <div className="space-y-2">
           {candidates.map((c) => (

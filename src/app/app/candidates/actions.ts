@@ -9,6 +9,7 @@ import { can } from "@/lib/permissions";
 import { buildCandidateInput } from "@/lib/fields";
 import { computeChanges } from "@/lib/audit-diff";
 import { writeAudit } from "@/lib/audit";
+import { setFlash } from "@/lib/flash-server";
 
 async function loadOwned(communityId: string, id: string) {
   const c = await db.candidate.findFirst({ where: { id, communityId } });
@@ -47,6 +48,7 @@ export async function createCandidate(formData: FormData) {
   });
 
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד נוסף בהצלחה" });
   redirect(`/app/candidates/${created.id}`);
 }
 
@@ -58,7 +60,8 @@ export async function updateCandidate(id: string, formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const { columns, details, errors } = buildCandidateInput(raw);
   if (Object.keys(errors).length > 0) {
-    redirect(`/app/candidates/${id}/edit?error=validation`);
+    await setFlash({ type: "error", message: "יש לתקן את השדות המסומנים" });
+    redirect(`/app/candidates/${id}/edit`);
   }
 
   const beforeFlat = { ...existing, ...(existing.details as object) };
@@ -92,6 +95,7 @@ export async function updateCandidate(id: string, formData: FormData) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "הפרטים נשמרו" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -126,6 +130,7 @@ export async function deactivateCandidate(id: string, formData: FormData) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת סומן/ה כלא פעיל/ה" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -151,6 +156,7 @@ export async function reactivateCandidate(id: string) {
 
   revalidatePath(`/app/candidates/${id}`);
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת הוחזר/ה לפעילות" });
   redirect(`/app/candidates/${id}`);
 }
 
@@ -173,5 +179,6 @@ export async function deleteCandidate(id: string) {
   });
 
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד/ת נמחק/ה" });
   redirect("/app/candidates");
 }
