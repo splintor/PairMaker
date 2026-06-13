@@ -1,23 +1,9 @@
 import Link from "next/link";
 import { describeActiveFilters, paramsToQuery, type SearchParams } from "@/lib/candidate-search";
 
-/**
- * Removable chips describing the active filters. Each chip links to `basePath`
- * with its own param(s) removed; `exclude` hides chips for given param keys
- * (e.g. the fixed opposite-gender context on the suggest page).
- */
-export function FilterChips({
-  params,
-  basePath,
-  exclude = [],
-}: {
-  params: SearchParams;
-  basePath: string;
-  exclude?: string[];
-}) {
-  const chips = describeActiveFilters(params).filter(
-    (c) => !c.removeKeys.some((k) => exclude.includes(k)),
-  );
+/** Removable chips describing the active filters; each links to `basePath` with its param(s) removed. */
+export function FilterChips({ params, basePath }: { params: SearchParams; basePath: string }) {
+  const chips = describeActiveFilters(params);
   if (chips.length === 0) return null;
 
   return (

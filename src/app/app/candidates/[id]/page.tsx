@@ -4,6 +4,7 @@ import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
+import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
@@ -75,7 +76,9 @@ export default async function CandidateProfile({
           </div>
           <div className="flex gap-2">
             {c.status === "active" && (
-              <LinkButton href={`/app/candidates/${id}/suggest`}>+ הצעת שידוך</LinkButton>
+              <LinkButton href={`/app/candidates/${id}/suggest?gender=${oppositeGender(c.gender)}`}>
+                + הצעת שידוך
+              </LinkButton>
             )}
             <LinkButton href={`/app/candidates/${id}/edit`}>עריכה</LinkButton>
           </div>

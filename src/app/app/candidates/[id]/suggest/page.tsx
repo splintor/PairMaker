@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { SearchPanel } from "@/components/SearchPanel";
 import { FilterChips } from "@/components/FilterChips";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
-import { oppositeGender } from "@/lib/suggestions";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { createSuggestion } from "@/app/app/matches/actions";
 
@@ -25,8 +24,13 @@ export default async function SuggestPage({
 
   const sp: SearchParams = {};
   for (const [k, v] of Object.entries(raw)) sp[k] = Array.isArray(v) ? v[0] : v;
-  // Default to the opposite gender (matchmaker may still change it).
-  if (!sp.gender) sp.gender = oppositeGender(source.gender);
+  // Gender is seeded to the opposite gender via the link from the profile, so
+  // it shows as a normal removable chip (clear it to search all genders).
+  const advancedKey = Object.entries(sp)
+    .filter(([k]) => k !== "q")
+    .map(([k, v]) => `${k}=${v}`)
+    .sort()
+    .join("&");
 
   // Exclude self + already-suggested partners.
   const existing = await db.suggestion.findMany({
@@ -43,9 +47,9 @@ export default async function SuggestPage({
       <Link href={`/app/candidates/${id}`} className="text-sm text-brand-600">→ חזרה לפרופיל</Link>
       <h1 className="text-xl font-bold text-brand-700">הצעת שידוך עבור {source.name}</h1>
 
-      <SearchPanel params={sp} />
+      <SearchPanel key={advancedKey} params={sp} />
 
-      <FilterChips params={sp} basePath={`/app/candidates/${id}/suggest`} exclude={["gender"]} />
+      <FilterChips params={sp} basePath={`/app/candidates/${id}/suggest`} />
 
       <div className="text-sm text-slate-500">{matches.length} מועמדים אפשריים</div>
 
