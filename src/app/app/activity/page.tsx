@@ -1,21 +1,8 @@
 import Link from "next/link";
 import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { describeAudit } from "@/lib/audit-format";
-
-const ENTITY_OPTIONS = [
-  { value: "", label: "הכל" },
-  { value: "candidate", label: "מועמדים" },
-  { value: "suggestion", label: "שידוכים" },
-  { value: "membership", label: "חברים" },
-];
-const ACTION_LABELS: Record<string, string> = {
-  create: "יצירה",
-  update: "עדכון",
-  deactivate: "השבתה",
-  reactivate: "החזרה לפעילות",
-  delete: "מחיקה",
-};
+import { describeAudit, auditHref } from "@/lib/audit-format";
+import { ActivityFilters } from "@/components/ActivityFilters";
 
 function fmtTime(d: Date): string {
   return d.toISOString().slice(0, 16).replace("T", " ");
@@ -48,23 +35,7 @@ export default async function ActivityPage({
         <Link href="/app/settings" className="text-sm text-brand-600 hover:underline">← הגדרות</Link>
       </div>
 
-      <form method="get" className="flex flex-wrap gap-3 rounded-xl2 border border-brand-200 bg-white p-3 text-sm">
-        <label className="flex items-center gap-2">
-          סוג:
-          <select name="entityType" defaultValue={entityType ?? ""} dir="rtl" className="rounded-lg border border-brand-200 px-2 py-1.5">
-            {ENTITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          פעולה:
-          <select name="action" defaultValue={action ?? ""} dir="rtl" className="rounded-lg border border-brand-200 px-2 py-1.5">
-            <option value="">הכל</option>
-            {Object.entries(ACTION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select>
-        </label>
-        <button className="rounded-lg bg-brand-500 px-4 py-1.5 font-medium text-white hover:bg-brand-600">סינון</button>
-        <Link href="/app/activity" className="self-center text-brand-600 hover:underline">ניקוי</Link>
-      </form>
+      <ActivityFilters entityType={entityType ?? ""} action={action ?? ""} />
 
       {logs.length >= LIMIT && (
         <p className="text-xs text-slate-400">מוצגות {LIMIT} הרשומות האחרונות.</p>
@@ -73,10 +44,22 @@ export default async function ActivityPage({
       <ul className="space-y-2">
         {logs.map((l) => {
           const changes = (l.changes as Record<string, { from: unknown; to: unknown }> | null) ?? null;
+          const parts = describeAudit(l);
+          const href = auditHref(l);
           return (
             <li key={l.id} className="rounded-xl2 border border-brand-200 bg-white p-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-slate-800">{describeAudit(l)}</span>
+                <span className="text-sm text-slate-800">
+                  {parts.before}
+                  {href ? (
+                    <Link href={href} className="font-medium text-brand-700 hover:underline">
+                      {parts.label}
+                    </Link>
+                  ) : (
+                    parts.label
+                  )}
+                  {parts.after}
+                </span>
                 <span className="shrink-0 text-xs text-slate-400">{fmtTime(l.createdAt)}</span>
               </div>
               <div className="mt-1 text-xs text-slate-400">
