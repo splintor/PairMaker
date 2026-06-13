@@ -1,6 +1,8 @@
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { SuggestionItem } from "@/components/SuggestionItem";
+import { EmptyState } from "@/components/EmptyState";
+import { LinkButton } from "@/components/ui";
 import { SUGGESTION_STATUSES } from "@/lib/suggestions";
 
 export default async function MatchesPage() {
@@ -15,9 +17,12 @@ export default async function MatchesPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold text-brand-700">שידוכים ({suggestions.length})</h1>
       {suggestions.length === 0 && (
-        <p className="rounded-xl2 border border-dashed border-brand-200 bg-white p-8 text-center text-slate-400">
-          אין הצעות שידוך עדיין. הציעו שידוך מתוך פרופיל מועמד.
-        </p>
+        <EmptyState
+          icon="💞"
+          title="אין הצעות שידוך עדיין"
+          hint="הציעו שידוך מתוך פרופיל מועמד"
+          action={<LinkButton href="/app/candidates">עבור למועמדים</LinkButton>}
+        />
       )}
       {SUGGESTION_STATUSES.map((st) => {
         const group = suggestions.filter((s) => s.status === st.value);
