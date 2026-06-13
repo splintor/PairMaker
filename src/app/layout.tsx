@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
+import { Suspense } from "react";
+import { FlashToasts } from "@/components/FlashToasts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,6 +21,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <Toaster dir="rtl" position="top-center" richColors />
+        <Suspense fallback={null}>
+          <FlashToasts />
+        </Suspense>
       </body>
     </html>
   );

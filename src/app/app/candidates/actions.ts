@@ -9,6 +9,7 @@ import { can } from "@/lib/permissions";
 import { buildCandidateInput } from "@/lib/fields";
 import { computeChanges } from "@/lib/audit-diff";
 import { writeAudit } from "@/lib/audit";
+import { setFlash } from "@/lib/flash-server";
 
 async function loadOwned(communityId: string, id: string) {
   const c = await db.candidate.findFirst({ where: { id, communityId } });
@@ -47,6 +48,7 @@ export async function createCandidate(formData: FormData) {
   });
 
   revalidatePath("/app/candidates");
+  await setFlash({ type: "success", message: "המועמד נוסף בהצלחה" });
   redirect(`/app/candidates/${created.id}`);
 }
 
