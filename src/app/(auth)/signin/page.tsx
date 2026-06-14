@@ -7,7 +7,7 @@ export default function SignInPage() {
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-sm rounded-xl2 border border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 p-6 shadow-sm">
         <h1 className="text-2xl font-extrabold text-brand-700 text-center">💞 PairMaker</h1>
-        <p className="text-center text-sm text-brand-600 mt-1 mb-6">כניסת שדכנים</p>
+        <p className="text-center text-sm text-brand-600 mt-1 mb-6">כניסה למערכת</p>
 
         {googleEnabled && (
           <>
