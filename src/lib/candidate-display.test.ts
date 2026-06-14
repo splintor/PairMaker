@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { displayAge, ageLabel, statusLabel } from "./candidate-display";
+import {
+  displayAge,
+  ageLabel,
+  statusLabel,
+  ageToBirthdate,
+  ageWithBirthYear,
+  smokingLabel,
+} from "./candidate-display";
 
 describe("ageLabel", () => {
   it("uses בן for male", () => expect(ageLabel("male", 30)).toBe("בן 30"));
@@ -26,14 +33,37 @@ describe("displayAge", () => {
   const now = new Date("2026-06-09T00:00:00Z");
 
   it("derives age from birthdate when present", () => {
-    expect(displayAge({ birthdate: new Date("1996-06-09T00:00:00Z"), ageManual: null }, now)).toBe(30);
+    expect(displayAge({ birthdate: new Date("1996-06-09T00:00:00Z") }, now)).toBe(30);
   });
 
-  it("uses ageManual when no birthdate", () => {
-    expect(displayAge({ birthdate: null, ageManual: 27 }, now)).toBe(27);
+  it("returns null when no birthdate", () => {
+    expect(displayAge({ birthdate: null }, now)).toBeNull();
   });
+});
 
-  it("returns null when neither is set", () => {
-    expect(displayAge({ birthdate: null, ageManual: null }, now)).toBeNull();
+describe("ageToBirthdate", () => {
+  const now = new Date("2026-06-09T00:00:00Z");
+  it("round-trips with displayAge", () => {
+    expect(displayAge({ birthdate: ageToBirthdate(30, now) }, now)).toBe(30);
   });
+  it("uses currentYear - age", () => {
+    expect(ageToBirthdate(30, now).getUTCFullYear()).toBe(1996);
+  });
+});
+
+describe("ageWithBirthYear", () => {
+  const now = new Date("2026-06-09T00:00:00Z");
+  it("formats age with birth year", () => {
+    expect(ageWithBirthYear({ birthdate: new Date("1996-06-09T00:00:00Z") }, now)).toBe(
+      "30 (שנת לידה: 1996)",
+    );
+  });
+  it("returns null without birthdate", () => {
+    expect(ageWithBirthYear({ birthdate: null }, now)).toBeNull();
+  });
+});
+
+describe("smokingLabel", () => {
+  it("male", () => expect(smokingLabel("male")).toBe("מעשן"));
+  it("female", () => expect(smokingLabel("female")).toBe("מעשנת"));
 });

@@ -28,3 +28,12 @@ export function can(role: Role, action: Action): boolean {
   }
   return MEMBER_ACTIONS.has(action);
 }
+
+/** Members may mutate only candidates they created; admins may mutate any. */
+export function canEditCandidate(
+  role: Role,
+  userId: string,
+  candidate: { createdById: string | null },
+): boolean {
+  return role === "admin" || candidate.createdById === userId;
+}

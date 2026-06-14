@@ -12,7 +12,7 @@ export type FieldDef = {
   key: string;
   label: string; // Hebrew
   type: FieldType;
-  storage: "column" | "details";
+  storage: "column" | "details" | "virtual"; // "virtual" = shown in UI, mapped to a real column by the caller (e.g. age→birthdate)
   options?: FieldOption[]; // for select / multiselect
   required?: boolean;
   searchable?: boolean; // surfaced as a search filter in M3
@@ -28,7 +28,7 @@ export const GENDER_OPTIONS: FieldOption[] = [
 export const FIELDS: FieldDef[] = [
   { key: "name", label: "שם", type: "text", storage: "column", required: true, searchable: true, showInCard: true, group: "כללי" },
   { key: "gender", label: "מגדר", type: "select", storage: "column", required: true, options: GENDER_OPTIONS, searchable: true, showInCard: true, group: "כללי" },
-  { key: "ageManual", label: "גיל", type: "number", storage: "column", searchable: true, showInCard: true, group: "כללי" },
+  { key: "age", label: "גיל", type: "number", storage: "virtual", searchable: true, showInCard: false, group: "כללי" },
   { key: "occupation", label: "עיסוק", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
   { key: "heightCm", label: "גובה (ס\"מ)", type: "number", storage: "column", searchable: true, showInCard: true, group: "כללי" },
   { key: "city", label: "עיר", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
@@ -40,6 +40,9 @@ export const FIELDS: FieldDef[] = [
     storage: "details",
     options: [
       { value: "dati_leumi", label: "דתי-לאומי" },
+      { value: "dati_leumi_torani", label: "דתי לאומי תורני" },
+      { value: "dati_patuach", label: "דתי פתוח" },
+      { value: "datlash", label: "דתל\"ש" },
       { value: "haredi", label: "חרדי" },
       { value: "masorti", label: "מסורתי" },
       { value: "other", label: "אחר" },
@@ -63,7 +66,20 @@ export const FIELDS: FieldDef[] = [
     showInCard: false,
     group: "רקע",
   },
-  { key: "requirements", label: "דרישות לבן/בת הזוג", type: "longtext", storage: "column", searchable: false, showInCard: false, group: "דרישות" },
+  {
+    key: "smoking",
+    label: "עישון",
+    type: "boolean",
+    storage: "details",
+    options: [
+      { value: "true", label: "מעשן/ת" },
+      { value: "false", label: "לא מעשן/ת" },
+    ],
+    searchable: true,
+    showInCard: true,
+    group: "רקע",
+  },
+  { key: "requirements", label: "דרישות לבן/בת הזוג", type: "longtext", storage: "column", searchable: true, showInCard: false, group: "דרישות" },
 ];
 
 export function getField(key: string): FieldDef | undefined {
@@ -80,18 +96,28 @@ export function optionLabel(field: FieldDef, value: string): string {
 }
 
 export type BuiltInput = {
-  columns: Record<string, string | number>;
-  details: Record<string, string | number | string[]>;
+  columns: Record<string, string | number | boolean>;
+  details: Record<string, string | number | boolean | string[]>;
   errors: Record<string, string>;
 };
 
 export function buildCandidateInput(raw: Record<string, unknown>): BuiltInput {
-  const columns: Record<string, string | number> = {};
-  const details: Record<string, string | number | string[]> = {};
+  const columns: Record<string, string | number | boolean> = {};
+  const details: Record<string, string | number | boolean | string[]> = {};
   const errors: Record<string, string> = {};
 
   for (const field of FIELDS) {
+    if (field.storage === "virtual") continue; // mapped to a real column by the caller (age→birthdate)
+
     const rawValue = raw[field.key];
+
+    if (field.type === "boolean") {
+      const v = rawValue === "true" || rawValue === "on" || rawValue === "1" || rawValue === true;
+      if (field.storage === "column") columns[field.key] = v;
+      else details[field.key] = v;
+      continue;
+    }
+
     const str = rawValue == null ? "" : String(rawValue).trim();
 
     if (str === "") {
