@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Google from "next-auth/providers/google";
-import Resend from "next-auth/providers/resend";
+import Nodemailer from "next-auth/providers/nodemailer";
 import { db } from "@/lib/db";
 import { recordLogin } from "@/lib/audit-login";
 
@@ -10,7 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // JWT sessions avoid a DB round-trip on every request (faster navigation).
   // The Prisma adapter still persists users/accounts/verification tokens.
   session: { strategy: "jwt" },
-  pages: { signIn: "/signin" },
+  pages: { signIn: "/signin", verifyRequest: "/signin/verify" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -19,8 +19,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // an existing user with the same email (e.g. one created via magic-link).
       allowDangerousEmailAccountLinking: true,
     }),
-    Resend({
-      apiKey: process.env.AUTH_RESEND_KEY,
+    // Provider-agnostic SMTP magic-link sender. Point the EMAIL_SERVER_* vars at
+    // any SMTP service — Gmail (smtp.gmail.com) today, or Resend/SES/etc. later —
+    // without code changes. See .env.example for ready-to-use settings.
+    Nodemailer({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
       from: process.env.EMAIL_FROM,
     }),
   ],
