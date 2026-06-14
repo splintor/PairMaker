@@ -27,7 +27,7 @@ export async function requireMembership(): Promise<ActiveContext> {
 
   const rows = await db.membership.findMany({
     where: { userId: session.user.id },
-    include: { community: true },
+    include: { community: true, user: { select: { name: true, email: true } } },
     orderBy: { createdAt: "asc" },
   });
   if (rows.length === 0) redirect("/no-community");
@@ -42,8 +42,8 @@ export async function requireMembership(): Promise<ActiveContext> {
 
   return {
     userId: session.user.id,
-    userName: session.user.name ?? null,
-    userEmail: session.user.email ?? null,
+    userName: rows[0].user.name ?? null,
+    userEmail: rows[0].user.email ?? null,
     communityId,
     role: active.role,
     memberships: rows.map((r) => ({
