@@ -1,5 +1,6 @@
 import { signIn } from "@/lib/auth";
 import { setPendingLoginEmail } from "@/lib/pending-login-email";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const googleEnabled = !!process.env.AUTH_GOOGLE_ID;
 const emailEnabled = !!process.env.EMAIL_SERVER_HOST;
@@ -18,9 +19,12 @@ export default function SignInPage() {
               await signIn("google", { redirectTo: "/app" });
             }}
           >
-            <button className="w-full rounded-lg bg-white border border-brand-200 py-2.5 font-medium text-brand-700 hover:bg-brand-50">
+            <SubmitButton
+              pendingText="מעביר ל-Google…"
+              className="w-full rounded-lg bg-white border border-brand-200 py-2.5 font-medium text-brand-700 hover:bg-brand-50"
+            >
               התחברות עם Google
-            </button>
+            </SubmitButton>
           </form>
         )}
 
@@ -45,9 +49,12 @@ export default function SignInPage() {
               placeholder="האימייל שלך"
               className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start"
             />
-            <button className="w-full rounded-lg bg-brand-500 py-2.5 font-medium text-white hover:bg-brand-600">
+            <SubmitButton
+              pendingText="שולח קישור…"
+              className="w-full rounded-lg bg-brand-500 py-2.5 font-medium text-white hover:bg-brand-600"
+            >
               שליחת קישור כניסה
-            </button>
+            </SubmitButton>
           </form>
         )}
       </div>
