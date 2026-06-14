@@ -18,6 +18,31 @@ describe("auditSentence", () => {
   it("community rename", () => {
     expect(auditSentence({ entityType: "community", action: "update", entityLabel: "קהילה חדשה" })).toContain("שם הקהילה");
   });
+  it("uses the male form when the candidate is male", () => {
+    const s = auditSentence({ entityType: "candidate", action: "create", entityLabel: "דניאל", gender: "male" });
+    expect(s).toContain('מועמד "');
+    expect(s).toContain("נוסף");
+    expect(s).not.toContain("מועמד/ת");
+    expect(s).not.toContain("נוסף/ה");
+  });
+  it("uses the female form when the candidate is female", () => {
+    const s = auditSentence({ entityType: "candidate", action: "create", entityLabel: "דנה", gender: "female" });
+    expect(s).toContain("מועמדת");
+    expect(s).toContain("נוספה");
+    expect(s).not.toContain("מועמד/ת");
+  });
+  it("gendered female verbs for all candidate actions", () => {
+    const f = (action: string) => auditSentence({ entityType: "candidate", action, entityLabel: "דנה", gender: "female" });
+    expect(f("update")).toContain("עודכנה");
+    expect(f("deactivate")).toContain("הושבתה");
+    expect(f("reactivate")).toContain("הוחזרה לפעילות");
+    expect(f("delete")).toContain("נמחקה");
+  });
+  it("falls back to bi-gender when candidate gender is absent", () => {
+    const s = auditSentence({ entityType: "candidate", action: "create", entityLabel: "X" });
+    expect(s).toContain("מועמד/ת");
+    expect(s).toContain("נוסף/ה");
+  });
   it("login action", () => {
     expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("התחברות");
     expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("יוסי");
