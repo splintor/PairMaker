@@ -18,6 +18,10 @@ describe("auditSentence", () => {
   it("community rename", () => {
     expect(auditSentence({ entityType: "community", action: "update", entityLabel: "קהילה חדשה" })).toContain("שם הקהילה");
   });
+  it("login action", () => {
+    expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("התחברות");
+    expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("יוסי");
+  });
   it("keeps the entity name as a separable label", () => {
     const view = { entityType: "candidate", action: "update", entityLabel: "דנה לוי" };
     const { before, label, after } = describeAudit(view);
@@ -42,5 +46,8 @@ describe("auditHref", () => {
   it("does not link members or community", () => {
     expect(auditHref({ entityType: "membership", entityId: "u1", action: "create" })).toBeNull();
     expect(auditHref({ entityType: "community", entityId: "x", action: "update" })).toBeNull();
+  });
+  it("does not link auth/login events", () => {
+    expect(auditHref({ entityType: "auth", entityId: "u1", action: "login" })).toBeNull();
   });
 });

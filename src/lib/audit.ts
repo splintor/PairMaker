@@ -8,11 +8,12 @@ export type AuditAction =
   | "update"
   | "deactivate"
   | "reactivate"
-  | "delete";
+  | "delete"
+  | "login";
 
 export type AuditInput = {
   communityId: string;
-  entityType: "candidate" | "suggestion" | "membership" | "community";
+  entityType: "candidate" | "suggestion" | "membership" | "community" | "auth";
   entityId: string;
   entityLabel: string;
   action: AuditAction;

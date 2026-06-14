@@ -35,6 +35,9 @@ export function describeAudit(e: AuditView): AuditParts {
     if (e.action === "create") return { before: "קהילה נוצרה: ", label: name, after: "" };
     if (e.action === "update") return { before: "שם הקהילה עודכן ל-", label: name, after: "" };
   }
+  if (e.entityType === "auth" && e.action === "login") {
+    return { before: "התחברות למערכת: ", label: name, after: "" };
+  }
   return { before: `${e.entityType} · ${e.action}: `, label: name, after: "" };
 }
 
