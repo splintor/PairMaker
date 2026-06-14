@@ -26,7 +26,7 @@ function FilterControl({
       </div>
     );
   }
-  if (field.type === "select") {
+  if (field.type === "select" || field.type === "boolean") {
     return (
       <label className="block">
         <span className="mb-1 block text-sm text-slate-600">{field.label}</span>
@@ -125,7 +125,7 @@ export function SearchPanel({ params }: { params: SearchParams }) {
             dir="rtl"
             defaultValue={params.q ?? ""}
             onChange={onQuickChange}
-            placeholder="חיפוש מהיר (שם, עיסוק, עיר)…"
+            placeholder="חיפוש מהיר (שם, עיסוק, עיר, דרישות)…"
             className="flex-1 bg-transparent text-start outline-none"
           />
           {/* advanced-search toggle */}

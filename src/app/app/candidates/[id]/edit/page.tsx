@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
+import { canEditCandidate } from "@/lib/permissions";
+import { displayAge } from "@/lib/candidate-display";
 import { CandidateForm } from "@/components/CandidateForm";
 import { updateCandidate } from "@/app/app/candidates/actions";
 
@@ -13,8 +15,13 @@ export default async function EditCandidatePage({
   const { id } = await params;
   const c = await db.candidate.findFirst({ where: { id, communityId: ctx.communityId } });
   if (!c) notFound();
+  if (!canEditCandidate(ctx.role, ctx.userId, c)) redirect(`/app/candidates/${id}`);
 
-  const values = { ...c, ...(c.details as Record<string, unknown>) } as Record<string, unknown>;
+  const values = {
+    ...c,
+    ...(c.details as Record<string, unknown>),
+    age: displayAge(c) ?? "",
+  } as Record<string, unknown>;
   const action = updateCandidate.bind(null, id);
 
   return (
