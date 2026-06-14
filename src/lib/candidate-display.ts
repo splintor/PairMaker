@@ -4,6 +4,12 @@ export function ageLabel(gender: "male" | "female", age: number | null): string 
   return gender === "female" ? `בת ${age}` : `בן ${age}`;
 }
 
+/** Gendered active/inactive label: "פעיל"/"לא פעיל" (male), "פעילה"/"לא פעילה" (female), "פעיל/ה" fallback. */
+export function statusLabel(gender: "male" | "female" | null | undefined, active: boolean): string {
+  const base = gender === "male" ? "פעיל" : gender === "female" ? "פעילה" : "פעיל/ה";
+  return active ? base : `לא ${base}`;
+}
+
 export function displayAge(
   c: { birthdate: Date | null; ageManual: number | null },
   now: Date = new Date(),

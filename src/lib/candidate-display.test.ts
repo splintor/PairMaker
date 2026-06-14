@@ -1,10 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { displayAge, ageLabel } from "./candidate-display";
+import { displayAge, ageLabel, statusLabel } from "./candidate-display";
 
 describe("ageLabel", () => {
   it("uses בן for male", () => expect(ageLabel("male", 30)).toBe("בן 30"));
   it("uses בת for female", () => expect(ageLabel("female", 27)).toBe("בת 27"));
   it("returns null when age is null", () => expect(ageLabel("male", null)).toBeNull());
+});
+
+describe("statusLabel", () => {
+  it("male active/inactive", () => {
+    expect(statusLabel("male", true)).toBe("פעיל");
+    expect(statusLabel("male", false)).toBe("לא פעיל");
+  });
+  it("female active/inactive", () => {
+    expect(statusLabel("female", true)).toBe("פעילה");
+    expect(statusLabel("female", false)).toBe("לא פעילה");
+  });
+  it("falls back to bi-gender when gender is unknown", () => {
+    expect(statusLabel(null, true)).toBe("פעיל/ה");
+    expect(statusLabel(undefined, false)).toBe("לא פעיל/ה");
+  });
 });
 
 describe("displayAge", () => {

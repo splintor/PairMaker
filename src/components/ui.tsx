@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { statusLabel } from "@/lib/candidate-display";
 
 export function PrimaryButton({
   children,
@@ -28,14 +29,14 @@ export function LinkButton({ href, children }: { href: string; children: React.R
   );
 }
 
-export function StatusPill({ active }: { active: boolean }) {
+export function StatusPill({ active, gender }: { active: boolean; gender?: "male" | "female" | null }) {
   return active ? (
     <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-      פעיל/ה
+      {statusLabel(gender, true)}
     </span>
   ) : (
     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-      לא פעיל/ה
+      {statusLabel(gender, false)}
     </span>
   );
 }

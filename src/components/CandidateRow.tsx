@@ -23,7 +23,7 @@ export function CandidateRow({ c }: { c: Candidate }) {
         <div className="font-medium text-brand-700">{c.name}</div>
         <div className="truncate text-xs text-slate-500">{parts.join(" · ")}</div>
       </div>
-      <StatusPill active={c.status === "active"} />
+      <StatusPill active={c.status === "active"} gender={c.gender} />
     </Link>
   );
 }
