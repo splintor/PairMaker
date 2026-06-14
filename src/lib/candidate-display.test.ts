@@ -7,6 +7,7 @@ import {
   ageWithBirthYear,
   smokingLabel,
   creatorLabel,
+  addedByLabel,
 } from "./candidate-display";
 
 describe("ageLabel", () => {
@@ -78,4 +79,9 @@ describe("creatorLabel", () => {
     expect(creatorLabel({ name: null, email: null })).toBe("—");
     expect(creatorLabel(null)).toBe("—");
   });
+});
+
+describe("addedByLabel", () => {
+  it("male", () => expect(addedByLabel("male")).toBe("נוסף ע״י"));
+  it("female", () => expect(addedByLabel("female")).toBe("נוספה ע״י"));
 });

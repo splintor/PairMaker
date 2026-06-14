@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Candidate } from "@prisma/client";
-import { displayAge, ageLabel, smokingLabel, creatorLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, smokingLabel, creatorLabel, addedByLabel } from "@/lib/candidate-display";
 import { StatusPill } from "@/components/ui";
 import { CandidateAvatar } from "@/components/CandidateAvatar";
 
@@ -30,7 +30,7 @@ export function CandidateRow({ c }: { c: RowCandidate }) {
         <div className="truncate text-xs text-slate-500">{parts.join(" · ")}</div>
       </div>
       <span className="hidden shrink-0 text-xs text-slate-400 sm:inline">
-        נוסף ע״י {creatorLabel(c.createdBy)}
+        {addedByLabel(c.gender)} {creatorLabel(c.createdBy)}
       </span>
       <StatusPill active={c.status === "active"} gender={c.gender} />
     </Link>

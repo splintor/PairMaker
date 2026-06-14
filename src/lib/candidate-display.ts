@@ -41,3 +41,8 @@ export function creatorLabel(
 ): string {
   return createdBy?.name ?? createdBy?.email ?? "—";
 }
+
+/** Gendered "added by" verb phrase: "נוסף ע״י" (male) / "נוספה ע״י" (female). */
+export function addedByLabel(gender: "male" | "female" | null | undefined): string {
+  return gender === "female" ? "נוספה ע״י" : "נוסף ע״י";
+}
