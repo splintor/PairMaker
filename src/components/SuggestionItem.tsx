@@ -62,15 +62,13 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             placeholder="הערות"
             className="w-full rounded-lg border border-brand-200 px-3 py-2 text-start"
           />
-          <div className="mt-3 border-t border-slate-100 pt-3">
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
             <PendingButton className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
               שמירה
             </PendingButton>
+            <DeleteSuggestionButton action={removeAction} />
           </div>
         </form>
-        <div className="mt-2 flex justify-end">
-          <DeleteSuggestionButton action={removeAction} />
-        </div>
       </details>
     </div>
   );
