@@ -3,7 +3,7 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { Select } from "@/components/Select";
 import { PendingButton } from "@/components/PendingButton";
-import { addMember, changeMemberRole, removeMember, renameCommunity } from "./actions";
+import { addMember, changeMemberRole, removeMember, renameCommunity, setMemberName } from "./actions";
 
 const ROLE_OPTIONS = [
   { value: "member", label: "חבר/ה" },
@@ -43,6 +43,10 @@ export default async function SettingsPage() {
 
       <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
+          <span className="mb-1 block text-sm text-slate-600">שם</span>
+          <input name="name" type="text" dir="rtl" required placeholder="שם מלא" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
+        </label>
+        <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">הוספת חבר/ה (אימייל)</span>
           <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
@@ -56,8 +60,19 @@ export default async function SettingsPage() {
       <div className="space-y-2">
         {members.map((m) => (
           <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
-            <div>
-              <div className="font-medium text-slate-800">{m.user.name ?? m.user.email}</div>
+            <div className="flex flex-col gap-1">
+              <form action={setMemberName.bind(null, m.id)} className="flex items-end gap-2">
+                <input
+                  name="name"
+                  type="text"
+                  dir="rtl"
+                  required
+                  defaultValue={m.user.name ?? ""}
+                  placeholder="שם מלא"
+                  className="w-44 rounded-lg border border-brand-200 px-3 py-1.5 text-start text-sm"
+                />
+                <PendingButton className="text-xs text-brand-600 hover:underline disabled:opacity-60">שמירת שם</PendingButton>
+              </form>
               <div className="text-xs text-slate-400">{m.user.email}</div>
             </div>
             <div className="flex items-center gap-2">

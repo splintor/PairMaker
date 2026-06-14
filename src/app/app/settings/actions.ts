@@ -50,13 +50,18 @@ export async function addMember(formData: FormData) {
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = parseRole(formData.get("role"));
+  const name = String(formData.get("name") ?? "").trim();
   if (!email || !email.includes("@")) {
     await setFlash({ type: "error", message: "כתובת אימייל לא תקינה" });
     redirect("/app/settings");
   }
+  if (!name) {
+    await setFlash({ type: "error", message: "יש להזין שם" });
+    redirect("/app/settings");
+  }
 
   await db.$transaction(async (tx) => {
-    const user = await tx.user.upsert({ where: { email }, update: {}, create: { email } });
+    const user = await tx.user.upsert({ where: { email }, update: { name }, create: { email, name } });
     const existing = await tx.membership.findUnique({
       where: { userId_communityId: { userId: user.id, communityId: ctx.communityId } },
     });
@@ -116,6 +121,42 @@ export async function changeMemberRole(membershipId: string, formData: FormData)
 
   revalidatePath("/app/settings");
   await setFlash({ type: "success", message: "ההרשאה עודכנה" });
+  redirect("/app/settings");
+}
+
+export async function setMemberName(membershipId: string, formData: FormData) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) {
+    await setFlash({ type: "error", message: "יש להזין שם" });
+    redirect("/app/settings");
+  }
+
+  const m = await db.membership.findFirst({
+    where: { id: membershipId, communityId: ctx.communityId },
+    include: { user: true },
+  });
+  if (!m) redirect("/app/settings");
+  if (m.user.name === name) redirect("/app/settings");
+
+  await db.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: m.userId }, data: { name } });
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "membership",
+      entityId: m.userId,
+      entityLabel: m.user.email ?? name,
+      action: "update",
+      actorId: ctx.userId,
+      changes: { name: { from: m.user.name, to: name } },
+    });
+  });
+
+  revalidatePath("/app/settings");
+  revalidatePath("/app", "layout"); // refresh the top bar if the admin renamed themselves
+  await setFlash({ type: "success", message: "השם עודכן" });
   redirect("/app/settings");
 }
 
