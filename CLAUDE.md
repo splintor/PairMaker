@@ -19,11 +19,13 @@ carry a role (`admin` | `member`). All UI text is Hebrew, layout is RTL.
 ### Field registry — the heart of candidate data (`src/lib/fields.ts`)
 `FIELDS: FieldDef[]` is a single declarative registry that drives the candidate **form**, **search
 panel**, and **profile display**. Each field declares: `type` (text|longtext|number|select|multiselect|boolean),
-`storage` (`column` = real Prisma column | `details` = key in the `Candidate.details` JSONB blob),
+`storage` (`column` = real Prisma column | `details` = key in the `Candidate.details` JSONB blob |
+`virtual` = shown in UI but mapped to a real column by the caller — only `age`→`birthdate` uses this),
 `options`, `searchable`, `showInCard`, `group`. `buildCandidateInput(raw)` validates+splits form data
-into `{columns, details, errors}`. To add a candidate attribute you usually just add a `FieldDef`
-(JSONB-stored fields need **no migration**). NOTE: `boolean` is declared in `FieldType` but **not yet
-implemented** in the form, search, or `buildCandidateInput` — adding a real boolean field requires wiring those.
+into `{columns, details, errors}` (skips virtual fields; booleans always resolve to true/false, never
+skipped). To add a candidate attribute you usually just add a `FieldDef` (JSONB-stored fields need
+**no migration**). The `boolean` type is fully wired (form checkbox, tri-state search select, profile
+כן/לא); `smoking` is the first boolean field.
 
 ### Search (`src/lib/candidate-search.ts`)
 `buildCandidateWhere(params, communityId)` turns URL search params into a Prisma `where`. Quick search
@@ -33,20 +35,25 @@ use Prisma `path`/`string_contains`. Helpers: `hasActiveFilters`, `describeActiv
 `paramsToQuery`. UI: `src/components/SearchPanel.tsx` (quick input + slide-over advanced drawer).
 
 ### Permissions (`src/lib/permissions.ts`)
-`can(role, action)` — role-based only. `member` can create/edit/deactivate/delete candidates +
-manage suggestions; `admin` adds `member:manage` + `audit:view`. ⚠️ There is currently **no
-per-candidate ownership** check — any member can edit any candidate in their community.
+`can(role, action)` — role-based. Plus `canEditCandidate(role, userId, candidate)`: members may
+**mutate** (edit/deactivate/reactivate/delete) only candidates they created; admins mutate any. All
+members may still **view** and **propose suggestions** for any candidate in their community. Enforced
+in `actions.ts` (`loadOwned`), the profile page (gated controls), and the edit page (redirect guard).
 
 ### Candidate display (`src/lib/candidate-display.ts`)
-`displayAge(c)` prefers `birthdate` (computed) then falls back to `ageManual`. `ageLabel(gender, age)`
-→ gendered "בן 30"/"בת 27". `statusLabel` → gendered active/inactive.
+`displayAge(c)` computes age from `birthdate` (the only age source). `ageToBirthdate(age)` is the
+inverse used on save and in age-range search. `ageWithBirthYear(c)` → "30 (שנת לידה: 1996)" (profile).
+`ageLabel(gender, age)` → gendered "בן 30"/"בת 27" (cards). `smokingLabel(gender)` → מעשן/מעשנת.
+`statusLabel` → gendered active/inactive. Age is entered as a number in the form and converted to a
+birthdate (today's month/day, year = currentYear − age) by the server action.
 
 ### Photos
 Pipeline: `PhotoPicker.tsx` (client) downscales to ≤1280px JPEG → `POST /api/candidates/photo`
 (`src/app/api/candidates/photo/route.ts`) stores to Blob, returns a `handle` → saved as
 `Candidate.photoUrl`. Served (membership-gated) via `GET /api/candidates/[id]/photo`.
 `src/lib/blob.ts` (store/read/delete), `src/lib/photo.ts` (validation, type/ext). Avatars are circular
-(`CandidateAvatar.tsx`, `object-cover`).
+(`CandidateAvatar.tsx`, `object-cover`). On select, `PhotoCropModal.tsx` (react-easy-crop) shows a
+circular 1:1 crop; the cropped ≤512px JPEG is what gets uploaded.
 
 ### Audit log
 Every candidate/suggestion mutation writes an `AuditLog` row inside the same transaction via
@@ -63,8 +70,9 @@ Activity feed at `/app/activity`.
   active community: `src/lib/active-community.ts`.
 
 ## Schema notes (`prisma/schema.prisma`)
-`Candidate`: name, gender (enum), `birthdate?` + `ageManual?` (both exist; only `ageManual` exposed in
-form as "גיל"), occupation, heightCm, city, `requirements` (Text), `photoUrl`, `details` (JSONB),
+`Candidate`: name, gender (enum), `birthdate?` (stores year-of-birth; the form's "גיל" age input is
+converted to it on save — `ageManual` was removed), occupation, heightCm, city, `requirements` (Text),
+`photoUrl`, `details` (JSONB; holds `sector`, `education`, `smoking`),
 `status` (active|inactive) + deactivation fields, `createdById`. Phase-2 provenance fields
 (sourceMessageId/rawText/parsedJson) are present but unused. `Suggestion` enforces one per unordered
 pair via `pairKey`.
