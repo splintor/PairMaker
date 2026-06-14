@@ -13,11 +13,13 @@ export function Select({
   options,
   defaultValue = "",
   placeholder = "—",
+  onChange,
 }: {
   name: string;
   options: SelectOption[];
   defaultValue?: string;
   placeholder?: string;
+  onChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -75,6 +77,7 @@ export function Select({
                   onClick={() => {
                     setValue(o.value);
                     setOpen(false);
+                    onChange?.(o.value);
                   }}
                   className={`flex w-full items-center justify-between px-3 py-2 text-start hover:bg-brand-50 ${
                     isSelected ? "bg-brand-50 text-brand-700" : ""

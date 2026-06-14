@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 import { Select } from "@/components/Select";
 import { PendingButton } from "@/components/PendingButton";
 import { MemberNameField } from "@/components/MemberNameField";
-import { addMember, changeMemberRole, removeMember, renameCommunity } from "./actions";
+import { MemberRoleSelect } from "@/components/MemberRoleSelect";
+import { addMember, removeMember, renameCommunity } from "./actions";
 
 const ROLE_OPTIONS = [
   { value: "member", label: "חבר/ה" },
@@ -61,15 +62,12 @@ export default async function SettingsPage() {
       <div className="space-y-2">
         {members.map((m) => (
           <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <MemberNameField membershipId={m.id} defaultName={m.user.name ?? ""} />
-              <div className="text-xs text-slate-400">{m.user.email}</div>
+              <span className="text-xs text-slate-400">{m.user.email}</span>
             </div>
             <div className="flex items-center gap-2">
-              <form action={changeMemberRole.bind(null, m.id)} className="w-32">
-                <Select name="role" options={ROLE_OPTIONS} defaultValue={m.role} />
-                <PendingButton className="mt-1 text-xs text-brand-600 hover:underline disabled:opacity-60">עדכון תפקיד</PendingButton>
-              </form>
+              <MemberRoleSelect membershipId={m.id} defaultRole={m.role} />
               <form action={removeMember.bind(null, m.id)}>
                 <PendingButton className="text-sm text-red-600 hover:underline disabled:opacity-60">הסרה</PendingButton>
               </form>

@@ -85,25 +85,32 @@ export async function addMember(formData: FormData) {
   redirect("/app/settings");
 }
 
-export async function changeMemberRole(membershipId: string, formData: FormData) {
+export type RoleChangeResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Auto-saved from the settings client when the role dropdown changes. Takes the
+ * role directly and returns a result (no redirect) so the page isn't reloaded;
+ * the client reverts the dropdown and shows a toast on a failed change.
+ */
+export async function changeMemberRole(
+  membershipId: string,
+  rawRole: string,
+): Promise<RoleChangeResult> {
   const ctx = await requireMembership();
   if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
 
-  const role = parseRole(formData.get("role"));
+  const role = parseRole(rawRole);
   const m = await db.membership.findFirst({
     where: { id: membershipId, communityId: ctx.communityId },
     include: { user: true },
   });
-  if (!m) redirect("/app/settings");
-  if (m.role === role) redirect("/app/settings");
+  if (!m) return { ok: false, error: "החבר/ה לא נמצא/ה" };
+  if (m.role === role) return { ok: true };
 
   // Last-admin guard: don't demote the final admin.
   if (m.role === "admin" && role === "member") {
     const admins = await db.membership.count({ where: { communityId: ctx.communityId, role: "admin" } });
-    if (admins <= 1) {
-      await setFlash({ type: "error", message: "חייב להישאר לפחות מנהל/ת אחד/ת" });
-      redirect("/app/settings");
-    }
+    if (admins <= 1) return { ok: false, error: "חייב להישאר לפחות מנהל/ת אחד/ת" };
   }
 
   await db.$transaction(async (tx) => {
@@ -120,8 +127,7 @@ export async function changeMemberRole(membershipId: string, formData: FormData)
   });
 
   revalidatePath("/app/settings");
-  await setFlash({ type: "success", message: "ההרשאה עודכנה" });
-  redirect("/app/settings");
+  return { ok: true };
 }
 
 /**
