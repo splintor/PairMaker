@@ -6,6 +6,7 @@ import {
   ageToBirthdate,
   ageWithBirthYear,
   smokingLabel,
+  creatorLabel,
 } from "./candidate-display";
 
 describe("ageLabel", () => {
@@ -66,4 +67,15 @@ describe("ageWithBirthYear", () => {
 describe("smokingLabel", () => {
   it("male", () => expect(smokingLabel("male")).toBe("מעשן"));
   it("female", () => expect(smokingLabel("female")).toBe("מעשנת"));
+});
+
+describe("creatorLabel", () => {
+  it("prefers the name", () =>
+    expect(creatorLabel({ name: "שמוליק", email: "s@x.com" })).toBe("שמוליק"));
+  it("falls back to email when no name", () =>
+    expect(creatorLabel({ name: null, email: "s@x.com" })).toBe("s@x.com"));
+  it("returns — when neither and when null", () => {
+    expect(creatorLabel({ name: null, email: null })).toBe("—");
+    expect(creatorLabel(null)).toBe("—");
+  });
 });

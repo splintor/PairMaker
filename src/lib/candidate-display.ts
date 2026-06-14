@@ -34,3 +34,10 @@ export function ageWithBirthYear(c: { birthdate: Date | null }, now: Date = new 
 export function smokingLabel(gender: "male" | "female" | null | undefined): string {
   return gender === "female" ? "מעשנת" : "מעשן";
 }
+
+/** Display label for a candidate's creator: name, else email, else em-dash. */
+export function creatorLabel(
+  createdBy: { name: string | null; email: string | null } | null | undefined,
+): string {
+  return createdBy?.name ?? createdBy?.email ?? "—";
+}
