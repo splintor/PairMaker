@@ -39,7 +39,7 @@ export const FIELDS: FieldDef[] = [
     type: "select",
     storage: "details",
     options: [
-      { value: "dati_leumi", label: "דתי-לאומי" },
+      { value: "dati_leumi", label: "דתי לאומי" },
       { value: "dati_leumi_torani", label: "דתי לאומי תורני" },
       { value: "dati_patuach", label: "דתי פתוח" },
       { value: "datlash", label: "דתל\"ש" },
