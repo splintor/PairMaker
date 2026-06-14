@@ -44,8 +44,10 @@ in `actions.ts` (`loadOwned`), the profile page (gated controls), and the edit p
 `displayAge(c)` computes age from `birthdate` (the only age source). `ageToBirthdate(age)` is the
 inverse used on save and in age-range search. `ageWithBirthYear(c)` → "30 (שנת לידה: 1996)" (profile).
 `ageLabel(gender, age)` → gendered "בן 30"/"בת 27" (cards). `smokingLabel(gender)` → מעשן/מעשנת.
-`statusLabel` → gendered active/inactive. Age is entered as a number in the form and converted to a
-birthdate (today's month/day, year = currentYear − age) by the server action.
+`creatorLabel(createdBy)` → name ?? email ?? "—" (the "נוסף ע״י …" byline on list/card/profile; the
+list query must `include: { createdBy: { select: { name, email } } }`). `statusLabel` → gendered
+active/inactive. Age is entered as a number in the form and converted to a birthdate (today's
+month/day, year = currentYear − age) by the server action.
 
 ### Photos
 Pipeline: `PhotoPicker.tsx` (client) downscales to ≤1280px JPEG → `POST /api/candidates/photo`
@@ -66,8 +68,11 @@ Activity feed at `/app/activity`.
 - Pages: list `src/app/app/candidates/page.tsx`, profile `[id]/page.tsx`, edit `[id]/edit/page.tsx`,
   new `new/page.tsx`, suggest `[id]/suggest/page.tsx`. Matches: `src/app/app/matches/`.
 - Form `src/components/CandidateForm.tsx`, card `CandidateCard.tsx`, row `CandidateRow.tsx`.
-- Auth/session: `src/lib/auth.ts`, community context: `src/lib/community.ts` (`requireMembership`),
-  active community: `src/lib/active-community.ts`.
+- Auth/session: `src/lib/auth.ts` (**JWT** sessions). Community context: `src/lib/community.ts`
+  (`requireMembership` — sources `userName`/`userEmail` from the DB, not the JWT, so name changes show
+  in the top bar). Active community: `src/lib/active-community.ts`.
+- Settings (`src/app/app/settings/`): admins (`member:manage`) add members (name **required**) and
+  rename any member (`setMemberName`) — `User.name` is global to the person across communities.
 
 ## Schema notes (`prisma/schema.prisma`)
 `Candidate`: name, gender (enum), `birthdate?` (stores year-of-birth; the form's "גיל" age input is
