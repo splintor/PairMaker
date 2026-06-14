@@ -167,7 +167,7 @@ export function SearchPanel({ params }: { params: SearchParams }) {
             {advancedFields.map((f) => (
               <FilterControl key={f.key} field={f} params={params} />
             ))}
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 self-center text-sm text-slate-600">
               <input type="checkbox" name="inactive" value="1" defaultChecked={params.inactive === "1"} />
               כלול לא-פעילים
             </label>
