@@ -3,6 +3,7 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { describeAudit, auditHref } from "@/lib/audit-format";
 import { ActivityFilters } from "@/components/ActivityFilters";
+import { ReloadButton } from "@/components/ReloadButton";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 
@@ -34,7 +35,10 @@ export default async function ActivityPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-brand-700">יומן פעילות</h1>
-        <Link href="/app/settings" className="text-sm text-brand-600 hover:underline">← הגדרות</Link>
+        <div className="flex items-center gap-3">
+          <ReloadButton />
+          <Link href="/app/settings" className="text-sm text-brand-600 hover:underline">← הגדרות</Link>
+        </div>
       </div>
 
       <ActivityFilters entityType={entityType ?? ""} action={action ?? ""} />
