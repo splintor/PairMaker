@@ -24,7 +24,11 @@ export default async function CandidatesPage({
 
   const view = parseView((await cookies()).get(CANDIDATE_VIEW_COOKIE)?.value);
   const where = buildCandidateWhere(params, ctx.communityId);
-  const candidates = await db.candidate.findMany({ where, orderBy: { updatedAt: "desc" } });
+  const candidates = await db.candidate.findMany({
+    where,
+    orderBy: { updatedAt: "desc" },
+    include: { createdBy: { select: { name: true, email: true } } },
+  });
 
   // Remount SearchPanel only when advanced filters change (keep focus while typing q).
   const advancedKey = Object.entries(params)

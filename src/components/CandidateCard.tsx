@@ -1,10 +1,14 @@
 import Link from "next/link";
 import type { Candidate } from "@prisma/client";
-import { displayAge, ageLabel, smokingLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, smokingLabel, creatorLabel } from "@/lib/candidate-display";
 import { StatusPill } from "@/components/ui";
 import { CandidateAvatar } from "@/components/CandidateAvatar";
 
-export function CandidateCard({ c }: { c: Candidate }) {
+type CardCandidate = Candidate & {
+  createdBy: { name: string | null; email: string | null } | null;
+};
+
+export function CandidateCard({ c }: { c: CardCandidate }) {
   const age = displayAge(c);
   const details = (c.details as Record<string, unknown>) ?? {};
   const subtitleParts = [
@@ -29,6 +33,7 @@ export function CandidateCard({ c }: { c: Candidate }) {
       <div className="mt-3 flex flex-wrap gap-2">
         <StatusPill active={c.status === "active"} gender={c.gender} />
       </div>
+      <div className="mt-2 text-xs text-slate-400">נוסף ע״י {creatorLabel(c.createdBy)}</div>
     </Link>
   );
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel, ageWithBirthYear, statusLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel } from "@/lib/candidate-display";
 import { canEditCandidate } from "@/lib/permissions";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
@@ -109,7 +109,7 @@ export default async function CandidateProfile({
         )}
 
         <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4 text-sm text-slate-400">
-          <span>נוסף ע״י {c.createdBy?.name ?? c.createdBy?.email ?? "—"}</span>
+          <span>נוסף ע״י {creatorLabel(c.createdBy)}</span>
           {canEdit &&
             (c.status === "active" ? (
               <DeactivateDialog action={deactivateAction} />
