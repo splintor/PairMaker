@@ -8,6 +8,7 @@ const ENTITY_OPTIONS = [
   { value: "suggestion", label: "שידוכים" },
   { value: "membership", label: "חברים" },
   { value: "community", label: "קהילה" },
+  { value: "auth", label: "התחברויות" },
 ];
 
 const ACTION_OPTIONS = [
@@ -17,6 +18,7 @@ const ACTION_OPTIONS = [
   { value: "deactivate", label: "השבתה" },
   { value: "reactivate", label: "החזרה לפעילות" },
   { value: "delete", label: "מחיקה" },
+  { value: "login", label: "התחברות" },
 ];
 
 const selectCls = "rounded-lg border border-brand-200 px-2 py-1.5";
