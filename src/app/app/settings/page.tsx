@@ -3,7 +3,8 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { Select } from "@/components/Select";
 import { PendingButton } from "@/components/PendingButton";
-import { addMember, changeMemberRole, removeMember, renameCommunity, setMemberName } from "./actions";
+import { MemberNameField } from "@/components/MemberNameField";
+import { addMember, changeMemberRole, removeMember, renameCommunity } from "./actions";
 
 const ROLE_OPTIONS = [
   { value: "member", label: "חבר/ה" },
@@ -61,18 +62,7 @@ export default async function SettingsPage() {
         {members.map((m) => (
           <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
             <div className="flex flex-col gap-1">
-              <form action={setMemberName.bind(null, m.id)} className="flex items-end gap-2">
-                <input
-                  name="name"
-                  type="text"
-                  dir="rtl"
-                  required
-                  defaultValue={m.user.name ?? ""}
-                  placeholder="שם מלא"
-                  className="w-44 rounded-lg border border-brand-200 px-3 py-1.5 text-start text-sm"
-                />
-                <PendingButton className="text-xs text-brand-600 hover:underline disabled:opacity-60">שמירת שם</PendingButton>
-              </form>
+              <MemberNameField membershipId={m.id} defaultName={m.user.name ?? ""} />
               <div className="text-xs text-slate-400">{m.user.email}</div>
             </div>
             <div className="flex items-center gap-2">

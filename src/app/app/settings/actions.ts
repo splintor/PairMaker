@@ -124,22 +124,23 @@ export async function changeMemberRole(membershipId: string, formData: FormData)
   redirect("/app/settings");
 }
 
-export async function setMemberName(membershipId: string, formData: FormData) {
+/**
+ * Auto-saved (debounced) from the settings client. Takes the name directly and
+ * does NOT redirect — returns silently so the page isn't reloaded on each save.
+ * Ignores a blank name (name is required; we keep the last value).
+ */
+export async function setMemberName(membershipId: string, rawName: string) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
 
-  const name = String(formData.get("name") ?? "").trim();
-  if (!name) {
-    await setFlash({ type: "error", message: "יש להזין שם" });
-    redirect("/app/settings");
-  }
+  const name = rawName.trim();
+  if (!name) return;
 
   const m = await db.membership.findFirst({
     where: { id: membershipId, communityId: ctx.communityId },
     include: { user: true },
   });
-  if (!m) redirect("/app/settings");
-  if (m.user.name === name) redirect("/app/settings");
+  if (!m || m.user.name === name) return;
 
   await db.$transaction(async (tx) => {
     await tx.user.update({ where: { id: m.userId }, data: { name } });
@@ -156,8 +157,6 @@ export async function setMemberName(membershipId: string, formData: FormData) {
 
   revalidatePath("/app/settings");
   revalidatePath("/app", "layout"); // refresh the top bar if the admin renamed themselves
-  await setFlash({ type: "success", message: "השם עודכן" });
-  redirect("/app/settings");
 }
 
 export async function removeMember(membershipId: string) {
