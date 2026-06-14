@@ -10,7 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // JWT sessions avoid a DB round-trip on every request (faster navigation).
   // The Prisma adapter still persists users/accounts/verification tokens.
   session: { strategy: "jwt" },
-  pages: { signIn: "/signin" },
+  pages: { signIn: "/signin", verifyRequest: "/signin/verify" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,

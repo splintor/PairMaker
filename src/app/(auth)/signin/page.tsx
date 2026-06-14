@@ -1,4 +1,5 @@
 import { signIn } from "@/lib/auth";
+import { setPendingLoginEmail } from "@/lib/pending-login-email";
 
 const googleEnabled = !!process.env.AUTH_GOOGLE_ID;
 const emailEnabled = !!process.env.EMAIL_SERVER_HOST;
@@ -31,7 +32,9 @@ export default function SignInPage() {
           <form
             action={async (fd: FormData) => {
               "use server";
-              await signIn("nodemailer", { email: String(fd.get("email")), redirectTo: "/app" });
+              const email = String(fd.get("email"));
+              await setPendingLoginEmail(email);
+              await signIn("nodemailer", { email, redirectTo: "/app" });
             }}
             className="space-y-2"
           >
