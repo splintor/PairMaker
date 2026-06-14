@@ -23,11 +23,13 @@ async function main() {
     create: { userId: user.id, communityId: community.id, role: "admin" },
   });
 
+  // Year of birth is stored as a birthdate (today's month/day, year shifted back by age).
+  const yob = (age: number) => new Date(Date.UTC(new Date().getUTCFullYear() - age, 5, 9));
   const sample = [
     {
       name: "יוסי כהן",
       gender: Gender.male,
-      ageManual: 30,
+      birthdate: yob(30),
       occupation: "מהנדס",
       heightCm: 178,
       requirements: "מחפש בחורה רצינית, משפחתית, גילאי 26–31.",
@@ -35,7 +37,7 @@ async function main() {
     {
       name: "דנה לוי",
       gender: Gender.female,
-      ageManual: 27,
+      birthdate: yob(27),
       occupation: "מורה",
       heightCm: 165,
       requirements: "מחפשת בן זוג רציני, בעל מקצוע, גילאי 28–33.",

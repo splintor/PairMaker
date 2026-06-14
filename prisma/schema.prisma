@@ -80,7 +80,6 @@ model Candidate {
   name               String
   gender             Gender
   birthdate          DateTime?
-  ageManual          Int?
   occupation         String?
   heightCm           Int?
   city               String?
