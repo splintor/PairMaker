@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, statusLabel } from "@/lib/candidate-display";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
@@ -68,7 +68,7 @@ export default async function CandidateProfile({
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-extrabold text-brand-700">{c.name}</h1>
-              <StatusPill active={c.status === "active"} />
+              <StatusPill active={c.status === "active"} gender={c.gender} />
             </div>
             <div className="text-sm text-brand-600">
               {[ageLabel(c.gender, age), c.occupation].filter(Boolean).join(" · ")}
@@ -102,7 +102,7 @@ export default async function CandidateProfile({
 
         {c.status === "inactive" && (
           <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-            לא פעיל/ה · סיבה: {deactivationReasonLabel(c.deactivationReason)}
+            {statusLabel(c.gender, false)} · סיבה: {deactivationReasonLabel(c.deactivationReason)}
             {c.deactivationNote ? ` · ${c.deactivationNote}` : ""}
           </div>
         )}

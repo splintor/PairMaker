@@ -25,7 +25,7 @@ export function CandidateCard({ c }: { c: Candidate }) {
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <StatusPill active={c.status === "active"} />
+        <StatusPill active={c.status === "active"} gender={c.gender} />
       </div>
     </Link>
   );
