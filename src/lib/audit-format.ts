@@ -1,4 +1,10 @@
-export type AuditView = { entityType: string; action: string; entityLabel: string };
+export type AuditView = {
+  entityType: string;
+  action: string;
+  entityLabel: string;
+  /** Candidate gender, when known — lets candidate entries render the correct grammatical form. */
+  gender?: "male" | "female" | null;
+};
 
 /** A sentence split so the entity name (`label`) can be rendered as a link. */
 export type AuditParts = { before: string; label: string; after: string };
@@ -6,14 +12,20 @@ export type AuditParts = { before: string; label: string; after: string };
 export function describeAudit(e: AuditView): AuditParts {
   const name = e.entityLabel;
   if (e.entityType === "candidate") {
-    const suffix: Record<string, string> = {
-      create: '" נוסף/ה',
-      update: '" עודכן/ה',
-      deactivate: '" הושבת/ה',
-      reactivate: '" הוחזר/ה לפעילות',
-      delete: '" נמחק/ה',
+    // [male, female, bi-gender fallback] for each action's verb.
+    const verbs: Record<string, [string, string, string]> = {
+      create: ["נוסף", "נוספה", "נוסף/ה"],
+      update: ["עודכן", "עודכנה", "עודכן/ה"],
+      deactivate: ["הושבת", "הושבתה", "הושבת/ה"],
+      reactivate: ["הוחזר לפעילות", "הוחזרה לפעילות", "הוחזר/ה לפעילות"],
+      delete: ["נמחק", "נמחקה", "נמחק/ה"],
     };
-    if (suffix[e.action]) return { before: 'מועמד/ת "', label: name, after: suffix[e.action] };
+    const v = verbs[e.action];
+    if (v) {
+      const idx = e.gender === "male" ? 0 : e.gender === "female" ? 1 : 2;
+      const noun = e.gender === "male" ? "מועמד" : e.gender === "female" ? "מועמדת" : "מועמד/ת";
+      return { before: `${noun} "`, label: name, after: `" ${v[idx]}` };
+    }
   }
   if (e.entityType === "suggestion") {
     const prefix: Record<string, string> = {

@@ -31,6 +31,26 @@ export default async function ActivityPage({
   const members = await db.membership.findMany({ where: { communityId: ctx.communityId }, include: { user: true } });
   const nameById = new Map(members.map((m) => [m.userId, m.user.name ?? m.user.email ?? ""]));
 
+  // Resolve candidate gender so candidate entries render the correct grammatical form.
+  // Gender is effectively immutable, so the current value equals the value at action time.
+  const candidateIds = [...new Set(logs.filter((l) => l.entityType === "candidate").map((l) => l.entityId))];
+  const candidates = candidateIds.length
+    ? await db.candidate.findMany({ where: { communityId: ctx.communityId, id: { in: candidateIds } }, select: { id: true, gender: true } })
+    : [];
+  const genderById = new Map(candidates.map((c) => [c.id, c.gender]));
+
+  // Deleted candidates are gone from the table; recover gender from the delete snapshot.
+  function genderFor(l: (typeof logs)[number]): "male" | "female" | null {
+    if (l.entityType !== "candidate") return null;
+    const live = genderById.get(l.entityId);
+    if (live) return live;
+    if (l.action === "delete") {
+      const g = (l.snapshot as { gender?: unknown } | null)?.gender;
+      if (g === "male" || g === "female") return g;
+    }
+    return null;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -57,7 +77,7 @@ export default async function ActivityPage({
         <ul className="space-y-2">
         {logs.map((l) => {
           const changes = (l.changes as Record<string, { from: unknown; to: unknown }> | null) ?? null;
-          const parts = describeAudit(l);
+          const parts = describeAudit({ ...l, gender: genderFor(l) });
           const href = auditHref(l);
           return (
             <li key={l.id} className="rounded-xl2 border border-brand-200 bg-white p-3">
