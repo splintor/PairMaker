@@ -1,3 +1,5 @@
+import { candidatePhotoSrc } from "@/lib/photo";
+
 const SIZES = {
   sm: "h-9 w-9 text-sm",
   md: "h-12 w-12 text-lg",
@@ -18,7 +20,7 @@ export function CandidateAvatar({
   const cls = `${SIZES[size]} shrink-0 rounded-full`;
   if (photoUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`/api/candidates/${id}/photo`} alt={name} className={`${cls} object-cover`} />;
+    return <img src={candidatePhotoSrc(id, photoUrl)} alt={name} className={`${cls} object-cover`} />;
   }
   return (
     <div

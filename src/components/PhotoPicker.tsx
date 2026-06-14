@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { validatePhotoUpload } from "@/lib/photo";
+import { validatePhotoUpload, candidatePhotoSrc } from "@/lib/photo";
 import { PhotoCropModal } from "@/components/PhotoCropModal";
 
 export function PhotoPicker({
@@ -13,7 +13,8 @@ export function PhotoPicker({
   defaultPhotoUrl?: string | null;
   candidateId?: string;
 }) {
-  const initialSrc = defaultPhotoUrl && candidateId ? `/api/candidates/${candidateId}/photo` : null;
+  const initialSrc =
+    defaultPhotoUrl && candidateId ? candidatePhotoSrc(candidateId, defaultPhotoUrl) : null;
   const [preview, setPreview] = useState<string | null>(initialSrc);
   const [handle, setHandle] = useState<string>(defaultPhotoUrl ?? "");
   const [busy, setBusy] = useState(false);

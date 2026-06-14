@@ -16,3 +16,13 @@ export function validatePhotoUpload({ type, size }: { type: string; size: number
 export function extForType(type: string): string {
   return type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
 }
+
+/**
+ * Cache-busting URL for a candidate's photo. The served route sets a 5-minute
+ * cache, but the route URL is stable per candidate — so a new upload (which gets
+ * a fresh blob handle) would otherwise be masked by the cached old image. The `v`
+ * token is derived from the blob handle, so it changes exactly when the photo does.
+ */
+export function candidatePhotoSrc(id: string, photoUrl: string): string {
+  return `/api/candidates/${id}/photo?v=${encodeURIComponent(photoUrl)}`;
+}
