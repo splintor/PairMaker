@@ -6,17 +6,16 @@ import {
   SUGGESTION_OUTCOMES,
   statusLabel,
   outcomeLabel,
-  statusIndex,
 } from "@/lib/suggestions";
 import { updateSuggestion, deleteSuggestion } from "@/app/app/matches/actions";
 import { DeleteSuggestionButton } from "@/components/DeleteSuggestionButton";
+import { PendingButton } from "@/components/PendingButton";
 
 type WithPair = Suggestion & { candidateA: Candidate; candidateB: Candidate };
 
 export function SuggestionItem({ s }: { s: WithPair }) {
   const action = updateSuggestion.bind(null, s.id);
   const removeAction = deleteSuggestion.bind(null, s.id);
-  const current = statusIndex(s.status);
 
   return (
     <div id={s.id} className="rounded-xl2 border border-brand-200 bg-white p-4">
@@ -34,15 +33,6 @@ export function SuggestionItem({ s }: { s: WithPair }) {
           {statusLabel(s.status)}
           {s.status === "closed" && s.outcome ? ` · ${outcomeLabel(s.outcome)}` : ""}
         </span>
-      </div>
-
-      <div className="mt-2 flex flex-wrap gap-1 text-xs">
-        {SUGGESTION_STATUSES.map((st, i) => (
-          <span key={st.value} className={i <= current ? "font-bold text-brand-700" : "text-slate-400"}>
-            {st.label}
-            {i < SUGGESTION_STATUSES.length - 1 ? " ▸ " : ""}
-          </span>
-        ))}
       </div>
 
       {s.notes && <p className="mt-2 text-sm text-slate-600">{s.notes}</p>}
@@ -72,15 +62,13 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             placeholder="הערות"
             className="w-full rounded-lg border border-brand-200 px-3 py-2 text-start"
           />
+          <div className="mt-3 border-t border-slate-100 pt-3">
+            <PendingButton className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
+              שמירה
+            </PendingButton>
+          </div>
         </form>
-        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-          <button
-            type="submit"
-            form={`sugg-${s.id}`}
-            className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
-          >
-            שמירה
-          </button>
+        <div className="mt-2 flex justify-end">
           <DeleteSuggestionButton action={removeAction} />
         </div>
       </details>
