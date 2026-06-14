@@ -2,35 +2,7 @@
 
 import { useRef, useState } from "react";
 import { validatePhotoUpload } from "@/lib/photo";
-
-const MAX_EDGE = 1280;
-
-/** Downscale to <=1280px longest edge, return a JPEG blob. Throws "decode" if undecodable. */
-async function downscale(file: File): Promise<Blob> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = () => reject(new Error("decode"));
-      i.src = url;
-    });
-    const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
-    const w = Math.round(img.width * scale);
-    const h = Math.round(img.height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("decode");
-    ctx.drawImage(img, 0, 0, w, h);
-    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.85));
-    if (!blob) throw new Error("decode");
-    return blob;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
+import { PhotoCropModal } from "@/components/PhotoCropModal";
 
 export function PhotoPicker({
   name,
@@ -46,9 +18,10 @@ export function PhotoPicker({
   const [handle, setHandle] = useState<string>(defaultPhotoUrl ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setError(null);
@@ -57,9 +30,13 @@ export function PhotoPicker({
       setError(check.message);
       return;
     }
+    // Open the crop modal; the upload happens once the user confirms a crop.
+    setCropSrc(URL.createObjectURL(file));
+  }
+
+  async function uploadBlob(blob: Blob) {
     setBusy(true);
     try {
-      const blob = await downscale(file);
       const fd = new FormData();
       fd.append("file", blob, "photo.jpg");
       const res = await fetch("/api/candidates/photo", { method: "POST", body: fd });
@@ -67,15 +44,17 @@ export function PhotoPicker({
       if (!res.ok) throw new Error(json.error ?? "upload");
       setHandle(json.handle);
       setPreview(URL.createObjectURL(blob));
-    } catch (err) {
-      setError(
-        err instanceof Error && err.message === "decode"
-          ? "לא ניתן לקרוא את התמונה"
-          : "העלאת התמונה נכשלה",
-      );
+    } catch {
+      setError("העלאת התמונה נכשלה");
     } finally {
       setBusy(false);
     }
+  }
+
+  function closeCrop() {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   function remove() {
@@ -120,6 +99,17 @@ export function PhotoPicker({
           className="hidden"
         />
       </div>
+
+      {cropSrc && (
+        <PhotoCropModal
+          src={cropSrc}
+          onCancel={closeCrop}
+          onCropped={async (blob) => {
+            await uploadBlob(blob);
+            closeCrop();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -10,16 +10,27 @@ export function statusLabel(gender: "male" | "female" | null | undefined, active
   return active ? base : `לא ${base}`;
 }
 
-export function displayAge(
-  c: { birthdate: Date | null; ageManual: number | null },
-  now: Date = new Date(),
-): number | null {
-  if (c.birthdate) {
-    let age = now.getUTCFullYear() - c.birthdate.getUTCFullYear();
-    const m = now.getUTCMonth() - c.birthdate.getUTCMonth();
-    if (m < 0 || (m === 0 && now.getUTCDate() < c.birthdate.getUTCDate())) age--;
-    return age;
-  }
-  if (typeof c.ageManual === "number") return c.ageManual;
-  return null;
+export function displayAge(c: { birthdate: Date | null }, now: Date = new Date()): number | null {
+  if (!c.birthdate) return null;
+  let age = now.getUTCFullYear() - c.birthdate.getUTCFullYear();
+  const m = now.getUTCMonth() - c.birthdate.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < c.birthdate.getUTCDate())) age--;
+  return age;
+}
+
+/** Inverse of displayAge: a birthdate at today's month/day, year shifted back by `age`. */
+export function ageToBirthdate(age: number, now: Date = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear() - age, now.getUTCMonth(), now.getUTCDate()));
+}
+
+/** "30 (שנת לידה: 1996)" — age with birth year, or null when no birthdate. */
+export function ageWithBirthYear(c: { birthdate: Date | null }, now: Date = new Date()): string | null {
+  const age = displayAge(c, now);
+  if (age == null) return null;
+  return `${age} (שנת לידה: ${c.birthdate!.getUTCFullYear()})`;
+}
+
+/** Gendered smoking word: מעשן (male) / מעשנת (female). */
+export function smokingLabel(gender: "male" | "female" | null | undefined): string {
+  return gender === "female" ? "מעשנת" : "מעשן";
 }

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel, statusLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, ageWithBirthYear, statusLabel } from "@/lib/candidate-display";
+import { canEditCandidate } from "@/lib/permissions";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
@@ -39,12 +40,10 @@ export default async function CandidateProfile({
 
   const details = (c.details as Record<string, unknown>) ?? {};
   const age = displayAge(c);
-  const detailFields = FIELDS.filter(
-    (f) => f.key !== "name" && f.key !== "requirements" && f.storage === "details",
-  );
-  const columnFields = FIELDS.filter(
-    (f) => !["name", "gender", "requirements"].includes(f.key) && f.storage === "column",
-  );
+  const ageDisplay = ageWithBirthYear(c) ?? "—";
+  const canEdit = canEditCandidate(ctx.role, ctx.userId, c);
+  // Registry order keeps age near the top; includes the virtual age + detail fields.
+  const profileFields = FIELDS.filter((f) => !["name", "gender", "requirements"].includes(f.key));
 
   const deactivateAction = deactivateCandidate.bind(null, id);
   const reactivateAction = reactivateCandidate.bind(null, id);
@@ -52,7 +51,9 @@ export default async function CandidateProfile({
 
   function valueFor(key: string): string {
     const field = getField(key)!;
+    if (field.storage === "virtual") return key === "age" ? ageDisplay : "—";
     const raw = field.storage === "column" ? (c as Record<string, unknown>)[key] : details[key];
+    if (field.type === "boolean") return raw == null ? "—" : raw ? "כן" : "לא";
     if (raw == null || raw === "") return "—";
     if (field.options) return optionLabel(field, String(raw));
     return String(raw);
@@ -80,12 +81,12 @@ export default async function CandidateProfile({
                 + הצעת שידוך
               </LinkButton>
             )}
-            <LinkButton href={`/app/candidates/${id}/edit`}>עריכה</LinkButton>
+            {canEdit && <LinkButton href={`/app/candidates/${id}/edit`}>עריכה</LinkButton>}
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {[...columnFields, ...detailFields].map((f) => (
+          {profileFields.map((f) => (
             <div key={f.key} className="rounded-lg bg-brand-50 p-3">
               <div className="text-xs text-slate-400">{f.label}</div>
               <div className="text-sm text-slate-700">{valueFor(f.key)}</div>
@@ -109,14 +110,15 @@ export default async function CandidateProfile({
 
         <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4 text-sm text-slate-400">
           <span>נוסף ע״י {c.createdBy?.name ?? c.createdBy?.email ?? "—"}</span>
-          {c.status === "active" ? (
-            <DeactivateDialog action={deactivateAction} />
-          ) : (
-            <form action={reactivateAction}>
-              <button className="text-sm text-emerald-700 hover:underline">החזרה לפעילות</button>
-            </form>
-          )}
-          <DeleteCandidateButton action={deleteAction} />
+          {canEdit &&
+            (c.status === "active" ? (
+              <DeactivateDialog action={deactivateAction} />
+            ) : (
+              <form action={reactivateAction}>
+                <button className="text-sm text-emerald-700 hover:underline">החזרה לפעילות</button>
+              </form>
+            ))}
+          {canEdit && <DeleteCandidateButton action={deleteAction} />}
         </div>
       </Card>
 

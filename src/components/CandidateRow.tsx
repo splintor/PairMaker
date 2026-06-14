@@ -1,16 +1,18 @@
 import Link from "next/link";
 import type { Candidate } from "@prisma/client";
-import { displayAge, ageLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, smokingLabel } from "@/lib/candidate-display";
 import { StatusPill } from "@/components/ui";
 import { CandidateAvatar } from "@/components/CandidateAvatar";
 
 export function CandidateRow({ c }: { c: Candidate }) {
   const age = displayAge(c);
+  const details = (c.details as Record<string, unknown>) ?? {};
   const parts = [
     ageLabel(c.gender, age),
     c.occupation,
     c.city,
     c.heightCm ? `${c.heightCm} ס"מ` : null,
+    details.smoking === true ? smokingLabel(c.gender) : null,
   ].filter(Boolean);
 
   return (

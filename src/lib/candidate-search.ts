@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { SEARCHABLE_FIELDS, optionLabel } from "@/lib/fields";
+import { ageToBirthdate } from "@/lib/candidate-display";
 
 export type SearchParams = Record<string, string | undefined>;
 
@@ -19,6 +20,7 @@ export function buildCandidateWhere(
         { name: { contains: q, mode: "insensitive" } },
         { occupation: { contains: q, mode: "insensitive" } },
         { city: { contains: q, mode: "insensitive" } },
+        { requirements: { contains: q, mode: "insensitive" } },
       ],
     });
   }
@@ -27,6 +29,16 @@ export function buildCandidateWhere(
     if (f.key === "name") continue; // covered by quick search
 
     if (f.type === "number") {
+      if (f.key === "age") {
+        // Age range maps to a birthdate range (older age → earlier birthdate).
+        const minA = Number(params.ageMin);
+        const maxA = Number(params.ageMax);
+        const bd: { gte?: Date; lte?: Date } = {};
+        if (params.ageMin && Number.isFinite(minA)) bd.lte = ageToBirthdate(minA); // youngest → latest birthdate
+        if (params.ageMax && Number.isFinite(maxA)) bd.gte = ageToBirthdate(maxA); // oldest → earliest birthdate
+        if (Object.keys(bd).length) and.push({ birthdate: bd });
+        continue;
+      }
       const range: { gte?: number; lte?: number } = {};
       const min = Number(params[`${f.key}Min`]);
       const max = Number(params[`${f.key}Max`]);
@@ -35,13 +47,20 @@ export function buildCandidateWhere(
       if (Object.keys(range).length && f.storage === "column") {
         and.push({ [f.key]: range } as Prisma.CandidateWhereInput);
       }
+    } else if (f.type === "boolean") {
+      const v = params[f.key]?.trim();
+      if (v === "true" || v === "false") {
+        const bool = v === "true";
+        if (f.storage === "column") and.push({ [f.key]: bool } as Prisma.CandidateWhereInput);
+        else and.push({ details: { path: [f.key], equals: bool } });
+      }
     } else if (f.type === "select") {
       const v = params[f.key]?.trim();
       if (v) {
         if (f.storage === "column") and.push({ [f.key]: v } as Prisma.CandidateWhereInput);
         else and.push({ details: { path: [f.key], equals: v } });
       }
-    } else if (f.type === "text") {
+    } else if (f.type === "text" || f.type === "longtext") {
       const v = params[f.key]?.trim();
       if (v) {
         if (f.storage === "column") {
@@ -80,6 +99,11 @@ export function describeActiveFilters(params: SearchParams): FilterChip[] {
       if (min || max) {
         const range = min && max ? `${min}–${max}` : min ? `מ-${min}` : `עד ${max}`;
         chips.push({ removeKeys: [`${f.key}Min`, `${f.key}Max`], label: `${f.label}: ${range}` });
+      }
+    } else if (f.type === "boolean") {
+      const v = params[f.key]?.trim();
+      if (v === "true" || v === "false") {
+        chips.push({ removeKeys: [f.key], label: `${f.label}: ${v === "true" ? "כן" : "לא"}` });
       }
     } else {
       const v = params[f.key]?.trim();

@@ -4,17 +4,29 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { requireMembership } from "@/lib/community";
-import { can } from "@/lib/permissions";
+import { requireMembership, type ActiveContext } from "@/lib/community";
+import { can, canEditCandidate } from "@/lib/permissions";
+import { ageToBirthdate } from "@/lib/candidate-display";
 import { buildCandidateInput } from "@/lib/fields";
 import { computeChanges } from "@/lib/audit-diff";
 import { writeAudit } from "@/lib/audit";
 import { setFlash } from "@/lib/flash-server";
 
-async function loadOwned(communityId: string, id: string) {
-  const c = await db.candidate.findFirst({ where: { id, communityId } });
+/** Load a candidate the current user is allowed to mutate (own, or any when admin). */
+async function loadOwned(ctx: ActiveContext, id: string) {
+  const c = await db.candidate.findFirst({ where: { id, communityId: ctx.communityId } });
   if (!c) redirect("/app/candidates");
+  if (!canEditCandidate(ctx.role, ctx.userId, c)) redirect(`/app/candidates/${id}`);
   return c;
+}
+
+/** Convert the form's age input to a birthdate. Returns "invalid" for a malformed age. */
+function birthdateFromForm(formData: FormData): Date | null | "invalid" {
+  const raw = String(formData.get("age") ?? "").trim();
+  if (raw === "") return null;
+  const age = Number(raw);
+  if (!Number.isFinite(age) || age <= 0 || age > 120) return "invalid";
+  return ageToBirthdate(age);
 }
 
 export async function createCandidate(formData: FormData) {
@@ -27,6 +39,9 @@ export async function createCandidate(formData: FormData) {
     redirect(`/app/candidates/new?error=validation`);
   }
 
+  const birthdate = birthdateFromForm(formData);
+  if (birthdate === "invalid") redirect(`/app/candidates/new?error=validation`);
+
   const photoUrl = String(formData.get("photoUrl") ?? "").trim() || null;
 
   const created = await db.$transaction(async (tx) => {
@@ -35,6 +50,7 @@ export async function createCandidate(formData: FormData) {
         communityId: ctx.communityId,
         createdById: ctx.userId,
         photoUrl,
+        birthdate,
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedCreateInput,
@@ -58,12 +74,18 @@ export async function createCandidate(formData: FormData) {
 export async function updateCandidate(id: string, formData: FormData) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "candidate:edit")) throw new Error("forbidden");
-  const existing = await loadOwned(ctx.communityId, id);
+  const existing = await loadOwned(ctx, id);
 
   const raw = Object.fromEntries(formData.entries());
   const { columns, details, errors } = buildCandidateInput(raw);
   if (Object.keys(errors).length > 0) {
     await setFlash({ type: "error", message: "יש לתקן את השדות המסומנים" });
+    redirect(`/app/candidates/${id}/edit`);
+  }
+
+  const birthdate = birthdateFromForm(formData);
+  if (birthdate === "invalid") {
+    await setFlash({ type: "error", message: "גיל לא תקין" });
     redirect(`/app/candidates/${id}/edit`);
   }
 
@@ -76,6 +98,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       where: { id },
       data: {
         photoUrl,
+        birthdate,
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedUpdateInput,
@@ -88,6 +111,7 @@ export async function updateCandidate(id: string, formData: FormData) {
     delete changes.updatedAt;
     delete changes.details; // detail keys are already diffed individually; drop the redundant blob
     delete changes.photoUrl; // blob handle — don't print in the activity log
+    delete changes.birthdate; // raw date — age is surfaced elsewhere; don't print a noisy diff
     if (Object.keys(changes).length > 0) {
       await writeAudit(tx, {
         communityId: ctx.communityId,
@@ -115,7 +139,7 @@ export async function updateCandidate(id: string, formData: FormData) {
 export async function deactivateCandidate(id: string, formData: FormData) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "candidate:deactivate")) throw new Error("forbidden");
-  await loadOwned(ctx.communityId, id);
+  await loadOwned(ctx, id);
 
   const reason = String(formData.get("reason") ?? "");
   const note = String(formData.get("note") ?? "");
@@ -150,7 +174,7 @@ export async function deactivateCandidate(id: string, formData: FormData) {
 export async function reactivateCandidate(id: string) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "candidate:deactivate")) throw new Error("forbidden");
-  await loadOwned(ctx.communityId, id);
+  await loadOwned(ctx, id);
 
   await db.$transaction(async (tx) => {
     const updated = await tx.candidate.update({
@@ -176,7 +200,7 @@ export async function reactivateCandidate(id: string) {
 export async function deleteCandidate(id: string) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "candidate:delete")) throw new Error("forbidden");
-  const existing = await loadOwned(ctx.communityId, id);
+  const existing = await loadOwned(ctx, id);
 
   await db.$transaction(async (tx) => {
     await writeAudit(tx, {

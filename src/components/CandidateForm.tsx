@@ -11,6 +11,17 @@ function Input({ field, value }: { field: FieldDef; value: string }) {
   if (field.type === "longtext") {
     return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
   }
+  if (field.type === "boolean") {
+    return (
+      <input
+        type="checkbox"
+        name={field.key}
+        value="true"
+        defaultChecked={value === "true" || value === "on"}
+        className="h-5 w-5 rounded border-brand-300 text-brand-600"
+      />
+    );
+  }
   if (field.type === "select") {
     return <Select name={field.key} options={field.options ?? []} defaultValue={value} />;
   }
