@@ -2,18 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Select } from "@/components/Select";
+import { RoleToggle } from "@/components/RoleToggle";
 import { changeMemberRole } from "@/app/app/settings/actions";
 
-const ROLE_OPTIONS = [
-  { value: "member", label: "שדכן/ית" },
-  { value: "admin", label: "מנהל/ת" },
-];
-
 /**
- * Role dropdown that saves on change (no button, no reload). On a rejected
- * change (e.g. demoting the last admin) it reverts the dropdown and toasts the
- * error. The `key` bump forces the uncontrolled Select to remount at the old value.
+ * Role toggle that saves on change (no button, no reload). The value is owned
+ * here, so a rejected change (e.g. demoting the last admin) simply leaves the
+ * toggle on the old role and toasts the error.
  */
 export function MemberRoleSelect({
   membershipId,
@@ -23,7 +18,6 @@ export function MemberRoleSelect({
   defaultRole: string;
 }) {
   const [role, setRole] = useState(defaultRole);
-  const [selectKey, setSelectKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
   async function onChange(next: string) {
@@ -35,20 +29,14 @@ export function MemberRoleSelect({
         setRole(next);
         toast.success("התפקיד עודכן");
       } else {
-        setSelectKey((k) => k + 1);
         toast.error(res.error);
       }
     } catch {
-      setSelectKey((k) => k + 1);
       toast.error("עדכון התפקיד נכשל");
     } finally {
       setSaving(false);
     }
   }
 
-  return (
-    <div className="w-32">
-      <Select key={selectKey} name="role" options={ROLE_OPTIONS} defaultValue={role} onChange={onChange} />
-    </div>
-  );
+  return <RoleToggle value={role} onChange={onChange} disabled={saving} />;
 }

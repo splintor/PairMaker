@@ -1,16 +1,11 @@
 import Link from "next/link";
 import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { Select } from "@/components/Select";
 import { PendingButton } from "@/components/PendingButton";
 import { MemberNameField } from "@/components/MemberNameField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
+import { RoleToggle } from "@/components/RoleToggle";
 import { addMember, removeMember, renameCommunity } from "./actions";
-
-const ROLE_OPTIONS = [
-  { value: "member", label: "שדכן/ית" },
-  { value: "admin", label: "מנהל/ת" },
-];
 
 export default async function SettingsPage() {
   const ctx = await requireCapability("member:manage");
@@ -52,9 +47,9 @@ export default async function SettingsPage() {
           <span className="mb-1 block text-sm text-slate-600">הוספת שדכן/ית (אימייל)</span>
           <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
-        <div className="w-32">
+        <div>
           <span className="mb-1 block text-sm text-slate-600">תפקיד</span>
-          <Select name="role" options={ROLE_OPTIONS} defaultValue="member" />
+          <RoleToggle name="role" defaultValue="member" />
         </div>
         <PendingButton>הוספה</PendingButton>
       </form>
