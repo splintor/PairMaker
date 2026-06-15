@@ -1,14 +1,26 @@
+import { cookies } from "next/headers";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { SuggestionItem } from "@/components/SuggestionItem";
+import { SuggestionFilterTabs } from "@/components/SuggestionFilterTabs";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 import { SUGGESTION_STATUSES } from "@/lib/suggestions";
+import { SUGGESTION_FILTER_COOKIE, parseSuggestionFilter } from "@/lib/suggestion-filter";
 
 export default async function MatchesPage() {
   const ctx = await requireMembership();
+  const filter = parseSuggestionFilter((await cookies()).get(SUGGESTION_FILTER_COOKIE)?.value);
+
+  const where = {
+    communityId: ctx.communityId,
+    ...(filter === "mine" ? { createdById: ctx.userId } : {}),
+    ...(filter === "my-candidates"
+      ? { OR: [{ candidateA: { createdById: ctx.userId } }, { candidateB: { createdById: ctx.userId } }] }
+      : {}),
+  };
   const suggestions = await db.suggestion.findMany({
-    where: { communityId: ctx.communityId },
+    where,
     include: {
       candidateA: true,
       candidateB: true,
@@ -19,7 +31,10 @@ export default async function MatchesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-brand-700">שידוכים ({suggestions.length})</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-brand-700">שידוכים ({suggestions.length})</h1>
+        <SuggestionFilterTabs value={filter} />
+      </div>
       {suggestions.length === 0 && (
         <EmptyState
           icon="💞"
