@@ -83,6 +83,8 @@ converted to it on save — `ageManual` was removed), occupation, heightCm, city
 pair via `pairKey`.
 
 ## Conventions
+- **Workflow:** single-developer project — do **not** use feature branches. Commit directly to `main`,
+  divided into small, logical commits. Push when asked.
 - Hebrew UI strings inline; RTL (`dir="rtl"`). Brand Tailwind palette.
 - **Gender-matched language:** when displaying data about a candidate, match the wording to the
   candidate's gender — e.g. מעשן (male) / מעשנת (female), בן/בת, פעיל/פעילה. Centralize gendered phrasing
