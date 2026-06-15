@@ -99,12 +99,17 @@ export function CandidateForm({
               const value = values[field.key] == null ? "" : String(values[field.key]);
               const isToggle = field.key === "gender" || field.widget === "toggle";
               const span = field.type === "longtext" || field.key === "smoking" ? "sm:col-span-2" : "";
+              // A couple of form-only labels spell out the expected content.
+              const labelText =
+                field.key === "name"
+                  ? "שם פרטי + שם משפחה"
+                  : field.key === "requirements"
+                    ? requirementsLabel(gender === "male" || gender === "female" ? gender : null)
+                    : field.label;
               const labelInner = (
                 <>
                   <span className="mb-1 block text-sm text-slate-600">
-                    {field.key === "requirements"
-                      ? requirementsLabel(gender === "male" || gender === "female" ? gender : null)
-                      : field.label}
+                    {labelText}
                     {field.required && <span className="text-red-500"> *</span>}
                   </span>
                   {control(field, value)}
