@@ -35,6 +35,16 @@ export function smokingLabel(gender: "male" | "female" | null | undefined): stri
   return gender === "female" ? "מעשנת" : "מעשן";
 }
 
+/**
+ * Gendered "requirements from the partner" label: a man states requirements from
+ * בת הזוג, a woman from בן הזוג; slash form when gender is unknown.
+ */
+export function requirementsLabel(gender: "male" | "female" | null | undefined): string {
+  if (gender === "male") return "דרישות מבת הזוג";
+  if (gender === "female") return "דרישות מבן הזוג";
+  return "דרישות מבן/בת הזוג";
+}
+
 /** Display label for a candidate's creator: name, else email, else em-dash. */
 export function creatorLabel(
   createdBy: { name: string | null; email: string | null } | null | undefined,

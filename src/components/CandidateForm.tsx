@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FIELDS, GENDER_OPTIONS, type FieldDef } from "@/lib/fields";
-import { smokingLabel } from "@/lib/candidate-display";
+import { smokingLabel, requirementsLabel } from "@/lib/candidate-display";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -102,7 +102,9 @@ export function CandidateForm({
               const labelInner = (
                 <>
                   <span className="mb-1 block text-sm text-slate-600">
-                    {field.label}
+                    {field.key === "requirements"
+                      ? requirementsLabel(gender === "male" || gender === "female" ? gender : null)
+                      : field.label}
                     {field.required && <span className="text-red-500"> *</span>}
                   </span>
                   {control(field, value)}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel, requirementsLabel } from "@/lib/candidate-display";
 import { canEditCandidate } from "@/lib/permissions";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
@@ -107,7 +107,7 @@ export default async function CandidateProfile({
 
         {c.requirements && (
           <div className="mt-4 rounded-lg bg-brand-50 p-3">
-            <div className="text-xs text-slate-400">דרישות לבן/בת הזוג</div>
+            <div className="text-xs text-slate-400">{requirementsLabel(c.gender)}</div>
             <div className="text-sm text-slate-700">{c.requirements}</div>
           </div>
         )}
