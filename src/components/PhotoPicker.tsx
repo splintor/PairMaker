@@ -1,8 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { validatePhotoUpload, candidatePhotoSrc } from "@/lib/photo";
-import { PhotoCropModal } from "@/components/PhotoCropModal";
+
+// The cropper pulls in react-easy-crop; load it only when a photo is actually
+// being cropped so it stays out of the new/edit page's initial bundle.
+const PhotoCropModal = dynamic(
+  () => import("@/components/PhotoCropModal").then((m) => m.PhotoCropModal),
+  { ssr: false },
+);
 
 export function PhotoPicker({
   name,

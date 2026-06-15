@@ -8,14 +8,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!session?.user?.id) return new NextResponse(null, { status: 401 });
 
   const { id } = await params;
-  const candidate = await db.candidate.findUnique({ where: { id } });
-  if (!candidate || !candidate.photoUrl) return new NextResponse(null, { status: 404 });
-
-  // Viewer must be a member of the candidate's community.
-  const member = await db.membership.findFirst({
-    where: { userId: session.user.id, communityId: candidate.communityId },
+  // Single round-trip: fetch the photo handle only if the viewer is a member of
+  // the candidate's community (membership check folded into the where clause).
+  const candidate = await db.candidate.findFirst({
+    where: { id, community: { memberships: { some: { userId: session.user.id } } } },
+    select: { photoUrl: true },
   });
-  if (!member) return new NextResponse(null, { status: 404 });
+  if (!candidate?.photoUrl) return new NextResponse(null, { status: 404 });
 
   const photo = await readCandidatePhoto(candidate.photoUrl);
   if (!photo) return new NextResponse(null, { status: 404 });
@@ -23,7 +22,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   return new NextResponse(photo.stream, {
     headers: {
       "Content-Type": photo.contentType,
-      "Cache-Control": "private, max-age=300",
+      // The src URL carries a `?v=<blob-handle>` token that changes whenever the
+      // photo changes, so an unchanged avatar can be cached immutably (the browser
+      // won't re-hit this function on every navigation / 5-minute window).
+      "Cache-Control": "private, max-age=31536000, immutable",
     },
   });
 }
