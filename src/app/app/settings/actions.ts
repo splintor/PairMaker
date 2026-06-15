@@ -81,7 +81,10 @@ export async function addMember(formData: FormData) {
   });
 
   revalidatePath("/app/settings");
-  await setFlash({ type: "success", message: "השדכן/ית נוסף/ה" });
+  await setFlash({
+    type: "success",
+    message: role === "admin" ? "המנהל/ת נוסף/ה" : "השדכן/ית נוסף/ה",
+  });
   redirect("/app/settings");
 }
 
