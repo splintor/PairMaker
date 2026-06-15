@@ -51,7 +51,13 @@ export default async function CandidateProfile({
   // Registry order keeps age near the top; includes the virtual age + detail fields.
   // Social fields render as icons (SocialLinks), not as text rows.
   const SOCIAL_KEYS = ["facebook", "linkedin", "instagram", "twitter"];
-  const profileFields = FIELDS.filter((f) => !["name", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key));
+  const relationEmpty = !(typeof details.relation === "string" && details.relation.trim());
+  const profileFields = FIELDS.filter(
+    (f) =>
+      !["name", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key) &&
+      // Skip the "how are they related to me?" row when it's empty.
+      !(f.key === "relation" && relationEmpty),
+  );
 
   const deactivateAction = deactivateCandidate.bind(null, id);
   const reactivateAction = reactivateCandidate.bind(null, id);
