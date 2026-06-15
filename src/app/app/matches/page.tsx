@@ -9,7 +9,11 @@ export default async function MatchesPage() {
   const ctx = await requireMembership();
   const suggestions = await db.suggestion.findMany({
     where: { communityId: ctx.communityId },
-    include: { candidateA: true, candidateB: true },
+    include: {
+      candidateA: true,
+      candidateB: true,
+      createdBy: { select: { name: true, email: true } },
+    },
     orderBy: { updatedAt: "desc" },
   });
 

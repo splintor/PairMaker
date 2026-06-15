@@ -11,8 +11,14 @@ import { updateSuggestion, deleteSuggestion } from "@/app/app/matches/actions";
 import { DeleteSuggestionButton } from "@/components/DeleteSuggestionButton";
 import { PendingButton } from "@/components/PendingButton";
 import { SuggestionUpdatePanel } from "@/components/SuggestionUpdatePanel";
+import { creatorLabel } from "@/lib/candidate-display";
+import { relativeTimeHe } from "@/lib/relative-time";
 
-type WithPair = Suggestion & { candidateA: Candidate; candidateB: Candidate };
+type WithPair = Suggestion & {
+  candidateA: Candidate;
+  candidateB: Candidate;
+  createdBy: { name: string | null; email: string | null } | null;
+};
 
 export function SuggestionItem({ s }: { s: WithPair }) {
   const action = updateSuggestion.bind(null, s.id);
@@ -37,6 +43,10 @@ export function SuggestionItem({ s }: { s: WithPair }) {
       </div>
 
       {s.notes && <p className="mt-2 text-sm text-slate-600">{s.notes}</p>}
+
+      <p className="mt-2 text-xs text-slate-400">
+        הוצע ע״י {creatorLabel(s.createdBy)} · {relativeTimeHe(s.createdAt)}
+      </p>
 
       <SuggestionUpdatePanel action={action}>
         <div className="grid gap-2 sm:grid-cols-2">

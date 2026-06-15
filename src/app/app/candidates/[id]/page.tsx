@@ -35,7 +35,11 @@ export default async function CandidateProfile({
 
   const suggestions = await db.suggestion.findMany({
     where: { communityId: ctx.communityId, OR: [{ candidateAId: id }, { candidateBId: id }] },
-    include: { candidateA: true, candidateB: true },
+    include: {
+      candidateA: true,
+      candidateB: true,
+      createdBy: { select: { name: true, email: true } },
+    },
     orderBy: { updatedAt: "desc" },
   });
 
