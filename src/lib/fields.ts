@@ -18,6 +18,7 @@ export type FieldDef = {
   searchable?: boolean; // surfaced as a search filter in M3
   showInCard?: boolean; // shown on the candidate card
   group?: string; // form section
+  widget?: "toggle"; // render a select/boolean as a segmented toggle (instead of dropdown/checkbox)
 };
 
 export const GENDER_OPTIONS: FieldOption[] = [
@@ -27,7 +28,7 @@ export const GENDER_OPTIONS: FieldOption[] = [
 
 export const FIELDS: FieldDef[] = [
   { key: "name", label: "שם", type: "text", storage: "column", required: true, searchable: true, showInCard: true, group: "כללי" },
-  { key: "gender", label: "מגדר", type: "select", storage: "column", required: true, options: GENDER_OPTIONS, searchable: true, showInCard: true, group: "כללי" },
+  { key: "gender", label: "מגדר", type: "select", storage: "column", required: true, options: GENDER_OPTIONS, searchable: true, showInCard: true, group: "כללי", widget: "toggle" },
   { key: "age", label: "גיל", type: "number", storage: "virtual", searchable: true, showInCard: false, group: "כללי" },
   { key: "occupation", label: "עיסוק", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
   { key: "heightCm", label: "גובה (ס\"מ)", type: "number", storage: "column", searchable: true, showInCard: true, group: "כללי" },
@@ -78,6 +79,7 @@ export const FIELDS: FieldDef[] = [
     searchable: true,
     showInCard: true,
     group: "רקע",
+    widget: "toggle",
   },
   { key: "requirements", label: "דרישות לבן/בת הזוג", type: "longtext", storage: "column", searchable: true, showInCard: false, group: "דרישות" },
 ];
