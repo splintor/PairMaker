@@ -6,6 +6,7 @@ import { SearchPanel } from "@/components/SearchPanel";
 import { FilterChips } from "@/components/FilterChips";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
+import { PendingButton } from "@/components/PendingButton";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 import { displayAge, ageLabel } from "@/lib/candidate-display";
 import { createSuggestion } from "@/app/app/matches/actions";
@@ -78,9 +79,9 @@ export default async function SuggestPage({
                   </div>
                 </div>
                 <form action={suggest}>
-                  <button className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                  <PendingButton className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
                     הצע
-                  </button>
+                  </PendingButton>
                 </form>
               </div>
             );
