@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
@@ -7,8 +8,10 @@ import { FilterChips } from "@/components/FilterChips";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
+import { SendToMemberButton } from "@/components/SendToMemberButton";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
-import { displayAge, ageLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, creatorLabel } from "@/lib/candidate-display";
+import { originFromHeaders } from "@/lib/request-url";
 import { createSuggestion } from "@/app/app/matches/actions";
 
 export default async function SuggestPage({
@@ -43,7 +46,14 @@ export default async function SuggestPage({
 
   const where = buildCandidateWhere(sp, ctx.communityId);
   (where.AND as object[]).push({ id: { notIn: excluded } });
-  const matches = await db.candidate.findMany({ where, orderBy: { updatedAt: "desc" } });
+  const matches = await db.candidate.findMany({
+    where,
+    orderBy: { updatedAt: "desc" },
+    include: { createdBy: { select: { id: true, name: true, email: true, phone: true } } },
+  });
+
+  // Absolute link to the source candidate, shared in the "send to member" message.
+  const sourceUrl = `${originFromHeaders(await headers())}/app/candidates/${id}`;
 
   return (
     <div className="space-y-4">
@@ -68,6 +78,10 @@ export default async function SuggestPage({
           {matches.map((m) => {
             const suggest = createSuggestion.bind(null, id, m.id);
             const age = displayAge(m);
+            // Offer to message the member who added this candidate — unless that's
+            // the current user, or they have no phone on file.
+            const creator = m.createdBy;
+            const showSendToMember = creator && creator.id !== ctx.userId && creator.phone;
             return (
               <div key={m.id} className="flex items-center justify-between rounded-xl2 border border-brand-200 bg-white p-4">
                 <div>
@@ -78,11 +92,22 @@ export default async function SuggestPage({
                     {[ageLabel(m.gender, age), m.occupation].filter(Boolean).join(" · ")}
                   </div>
                 </div>
-                <form action={suggest}>
-                  <PendingButton className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
-                    הצע
-                  </PendingButton>
-                </form>
+                <div className="flex items-center gap-2">
+                  {showSendToMember && (
+                    <SendToMemberButton
+                      creatorName={creatorLabel(creator)}
+                      creatorPhone={creator.phone!}
+                      theirCandidate={m.name}
+                      myCandidate={source.name}
+                      myCandidateUrl={sourceUrl}
+                    />
+                  )}
+                  <form action={suggest}>
+                    <PendingButton className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
+                      הצע
+                    </PendingButton>
+                  </form>
+                </div>
               </div>
             );
           })}

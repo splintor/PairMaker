@@ -45,6 +45,12 @@ export function requirementsLabel(gender: "male" | "female" | null | undefined):
   return "דרישות מבן/בת הזוג";
 }
 
+/** "First name" = the name without its last word (the whole name when it's a single word). */
+export function firstName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return parts.length > 1 ? parts.slice(0, -1).join(" ") : (parts[0] ?? "");
+}
+
 /** Display label for a candidate's creator: name, else email, else em-dash. */
 export function creatorLabel(
   createdBy: { name: string | null; email: string | null } | null | undefined,

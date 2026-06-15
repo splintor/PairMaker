@@ -8,7 +8,21 @@ import {
   smokingLabel,
   creatorLabel,
   addedByLabel,
+  firstName,
 } from "./candidate-display";
+
+describe("firstName", () => {
+  it("drops the last word of a multi-word name", () => {
+    expect(firstName("ריקי מאיר")).toBe("ריקי");
+    expect(firstName("John Paul Smith")).toBe("John Paul");
+  });
+  it("keeps a single-word name as-is", () => {
+    expect(firstName("אליס")).toBe("אליס");
+  });
+  it("trims and handles extra spaces", () => {
+    expect(firstName("  דני   לוי  ")).toBe("דני");
+  });
+});
 
 describe("ageLabel", () => {
   it("uses בן for male", () => expect(ageLabel("male", 30)).toBe("בן 30"));

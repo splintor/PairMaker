@@ -25,7 +25,7 @@ export function SendIntroButton({
   intro: IntroParty;
   introPhotoSrc: string | null;
 }) {
-  const href = whatsappHref(recipientPhone, buildIntroMessage(recipientGender, intro));
+  const href = whatsappHref(recipientPhone, buildIntroMessage({ name: recipientName, gender: recipientGender }, intro));
   return (
     <a
       href={href}
