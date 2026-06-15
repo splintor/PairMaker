@@ -10,6 +10,7 @@ import {
 import { updateSuggestion, deleteSuggestion } from "@/app/app/matches/actions";
 import { DeleteSuggestionButton } from "@/components/DeleteSuggestionButton";
 import { PendingButton } from "@/components/PendingButton";
+import { SuggestionUpdatePanel } from "@/components/SuggestionUpdatePanel";
 
 type WithPair = Suggestion & { candidateA: Candidate; candidateB: Candidate };
 
@@ -37,39 +38,36 @@ export function SuggestionItem({ s }: { s: WithPair }) {
 
       {s.notes && <p className="mt-2 text-sm text-slate-600">{s.notes}</p>}
 
-      <details className="mt-2">
-        <summary className="cursor-pointer text-sm text-brand-600">עדכון</summary>
-        <form id={`sugg-${s.id}`} action={action} className="mt-2 space-y-2">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <label className="block text-sm text-slate-600">
-              שלב
-              <div className="mt-1">
-                <Select name="status" options={SUGGESTION_STATUSES} defaultValue={s.status} />
-              </div>
-            </label>
-            <label className="block text-sm text-slate-600">
-              תוצאה (בסגירה)
-              <div className="mt-1">
-                <Select name="outcome" options={SUGGESTION_OUTCOMES} defaultValue={s.outcome ?? ""} placeholder="—" />
-              </div>
-            </label>
-          </div>
-          <textarea
-            name="notes"
-            dir="rtl"
-            rows={2}
-            defaultValue={s.notes ?? ""}
-            placeholder="הערות"
-            className="w-full rounded-lg border border-brand-200 px-3 py-2 text-start"
-          />
-          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-            <PendingButton className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
-              שמירה
-            </PendingButton>
-            <DeleteSuggestionButton action={removeAction} />
-          </div>
-        </form>
-      </details>
+      <SuggestionUpdatePanel action={action}>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="block text-sm text-slate-600">
+            שלב
+            <div className="mt-1">
+              <Select name="status" options={SUGGESTION_STATUSES} defaultValue={s.status} />
+            </div>
+          </label>
+          <label className="block text-sm text-slate-600">
+            תוצאה (בסגירה)
+            <div className="mt-1">
+              <Select name="outcome" options={SUGGESTION_OUTCOMES} defaultValue={s.outcome ?? ""} placeholder="—" />
+            </div>
+          </label>
+        </div>
+        <textarea
+          name="notes"
+          dir="rtl"
+          rows={2}
+          defaultValue={s.notes ?? ""}
+          placeholder="הערות"
+          className="w-full rounded-lg border border-brand-200 px-3 py-2 text-start"
+        />
+        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+          <PendingButton className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
+            שמירה
+          </PendingButton>
+          <DeleteSuggestionButton action={removeAction} />
+        </div>
+      </SuggestionUpdatePanel>
     </div>
   );
 }
