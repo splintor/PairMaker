@@ -115,7 +115,6 @@ export function MobileNav({
             <div className="mt-auto border-t border-slate-100 pt-4">
               <div className="mb-2 text-sm">
                 <div className="font-medium text-slate-700">{ctx.userName ?? ctx.userEmail}</div>
-                <div className="text-xs text-slate-400">{ctx.role === "admin" ? "מנהל/ת" : "חבר/ה"}</div>
               </div>
               <form action={signOutAction}>
                 <button className="text-sm text-slate-500 hover:text-slate-700">יציאה</button>
