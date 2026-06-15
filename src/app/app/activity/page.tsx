@@ -7,8 +7,12 @@ import { ReloadButton } from "@/components/ReloadButton";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 
+// Render in Israel local time (the server runs in UTC), DST-aware.
+const TZ = "Asia/Jerusalem";
 function fmtTime(d: Date): string {
-  return d.toISOString().slice(0, 16).replace("T", " ");
+  const date = d.toLocaleDateString("he-IL", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+  const time = d.toLocaleTimeString("he-IL", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false });
+  return `${date} ${time}`;
 }
 
 export default async function ActivityPage({
