@@ -14,6 +14,7 @@ import { DeactivateDialog } from "@/components/DeactivateDialog";
 import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
 import { SuggestionItem } from "@/components/SuggestionItem";
 import { PhoneLinks } from "@/components/PhoneLinks";
+import { SocialLinks } from "@/components/SocialLinks";
 import {
   deactivateCandidate,
   reactivateCandidate,
@@ -48,7 +49,9 @@ export default async function CandidateProfile({
   const ageDisplay = ageWithBirthYear(c) ?? "—";
   const canEdit = canEditCandidate(ctx.role, ctx.userId, c);
   // Registry order keeps age near the top; includes the virtual age + detail fields.
-  const profileFields = FIELDS.filter((f) => !["name", "gender", "requirements"].includes(f.key));
+  // Social fields render as icons (SocialLinks), not as text rows.
+  const SOCIAL_KEYS = ["facebook", "linkedin", "instagram", "twitter"];
+  const profileFields = FIELDS.filter((f) => !["name", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key));
 
   const deactivateAction = deactivateCandidate.bind(null, id);
   const reactivateAction = reactivateCandidate.bind(null, id);
@@ -105,6 +108,8 @@ export default async function CandidateProfile({
             </div>
           ))}
         </div>
+
+        <SocialLinks links={details} />
 
         {c.requirements && (
           <div className="mt-4 rounded-lg bg-brand-50 p-3">
