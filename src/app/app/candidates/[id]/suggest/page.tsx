@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
 import { SendToMemberButton } from "@/components/SendToMemberButton";
+import { CandidateAvatar } from "@/components/CandidateAvatar";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 import { displayAge, ageLabel, creatorLabel } from "@/lib/candidate-display";
 import { originFromHeaders } from "@/lib/request-url";
@@ -84,12 +85,20 @@ export default async function SuggestPage({
             const showSendToMember = creator && creator.id !== ctx.userId && creator.phone;
             return (
               <div key={m.id} className="flex items-center justify-between rounded-xl2 border border-brand-200 bg-white p-4">
-                <div>
-                  <Link href={`/app/candidates/${m.id}`} className="font-bold text-brand-700 hover:underline">
-                    {m.name}
-                  </Link>
-                  <div className="text-xs text-brand-600">
-                    {[ageLabel(m.gender, age), m.occupation].filter(Boolean).join(" · ")}
+                <div className="flex items-center gap-3">
+                  <CandidateAvatar id={m.id} name={m.name} photoUrl={m.photoUrl} size="md" />
+                  <div>
+                    <Link href={`/app/candidates/${m.id}`} className="font-bold text-brand-700 hover:underline">
+                      {m.name}
+                    </Link>
+                    <div className="text-xs text-brand-600">
+                      {[
+                        [ageLabel(m.gender, age), m.city ? `מ${m.city}` : ""].filter(Boolean).join(" "),
+                        m.occupation,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
