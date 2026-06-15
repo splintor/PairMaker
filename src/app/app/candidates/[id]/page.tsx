@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel, requirementsLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel, requirementsLabel, familyStatusLabel, relationLabel } from "@/lib/candidate-display";
 import { canEditCandidate } from "@/lib/permissions";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
@@ -60,6 +60,7 @@ export default async function CandidateProfile({
     const raw = field.storage === "column" ? (c as Record<string, unknown>)[key] : details[key];
     if (field.type === "boolean") return raw == null ? "—" : raw ? "כן" : "לא";
     if (raw == null || raw === "") return "—";
+    if (key === "familyStatus") return familyStatusLabel(String(raw), c!.gender);
     if (field.options) return optionLabel(field, String(raw));
     return String(raw);
   }
@@ -93,7 +94,7 @@ export default async function CandidateProfile({
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {profileFields.map((f) => (
             <div key={f.key} className="rounded-lg bg-brand-50 p-3">
-              <div className="text-xs text-slate-400">{f.label}</div>
+              <div className="text-xs text-slate-400">{f.key === "relation" ? relationLabel(c.gender) : f.label}</div>
               <div className="text-sm text-slate-700">
                 {f.key === "phone" && typeof details.phone === "string" && details.phone ? (
                   <PhoneLinks phone={details.phone} />

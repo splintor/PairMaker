@@ -13,12 +13,14 @@ export function Select({
   options,
   defaultValue = "",
   placeholder = "—",
+  includeEmpty = true,
   onChange,
 }: {
   name: string;
   options: SelectOption[];
   defaultValue?: string;
   placeholder?: string;
+  includeEmpty?: boolean; // prepend an empty "—" option (default). Set false for a required, pre-selected field.
   onChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue);
@@ -34,7 +36,7 @@ export function Select({
   }, []);
 
   const selected = options.find((o) => o.value === value);
-  const items: SelectOption[] = [{ value: "", label: placeholder }, ...options];
+  const items: SelectOption[] = includeEmpty ? [{ value: "", label: placeholder }, ...options] : options;
 
   function onTriggerKey(e: React.KeyboardEvent) {
     if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {

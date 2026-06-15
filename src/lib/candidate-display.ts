@@ -45,6 +45,26 @@ export function requirementsLabel(gender: "male" | "female" | null | undefined):
   return "דרישות מבן/בת הזוג";
 }
 
+const FAMILY_STATUS_WORDS: Record<string, { male: string; female: string; neutral: string }> = {
+  single: { male: "רווק", female: "רווקה", neutral: "רווק/ה" },
+  divorced: { male: "גרוש", female: "גרושה", neutral: "גרוש/ה" },
+  widowed: { male: "אלמן", female: "אלמנה", neutral: "אלמן/ה" },
+};
+
+/** Gendered family-status word, e.g. רווק/רווקה/רווק-ה; the raw value if unknown. */
+export function familyStatusLabel(value: string, gender: "male" | "female" | null | undefined): string {
+  const w = FAMILY_STATUS_WORDS[value];
+  if (!w) return value;
+  return gender === "male" ? w.male : gender === "female" ? w.female : w.neutral;
+}
+
+/** Gendered "how is this person related to me?" field label. */
+export function relationLabel(gender: "male" | "female" | null | undefined): string {
+  if (gender === "male") return "איך הוא קשור אלי?";
+  if (gender === "female") return "איך היא קשורה אלי?";
+  return "איך הוא/היא קשור/ה אלי?";
+}
+
 /** "First name" = the name without its last word (the whole name when it's a single word). */
 export function firstName(name: string): string {
   const parts = name.trim().split(/\s+/);

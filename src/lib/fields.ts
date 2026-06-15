@@ -82,7 +82,29 @@ export const FIELDS: FieldDef[] = [
     group: "רקע",
     widget: "toggle",
   },
+  {
+    key: "familyStatus",
+    label: "מצב משפחתי",
+    type: "select",
+    storage: "details",
+    // Slash-form labels here are the fallback (search panel / unknown gender); the
+    // form and profile render gender-matched labels via familyStatusLabel().
+    options: [
+      { value: "single", label: "רווק/ה" },
+      { value: "divorced", label: "גרוש/ה" },
+      { value: "widowed", label: "אלמן/ה" },
+    ],
+    searchable: true,
+    showInCard: false,
+    group: "רקע",
+  },
+  { key: "children", label: "מספר ילדים", type: "number", storage: "details", searchable: true, showInCard: false, group: "רקע" },
+  { key: "relation", label: "איך הוא קשור אלי?", type: "text", storage: "details", searchable: false, showInCard: false, group: "רקע" },
   { key: "requirements", label: "דרישות לבן/בת הזוג", type: "longtext", storage: "column", searchable: true, showInCard: false, group: "דרישות" },
+  { key: "facebook", label: "פייסבוק", type: "text", storage: "details", searchable: false, showInCard: false, group: "רשתות חברתיות" },
+  { key: "linkedin", label: "לינקדאין", type: "text", storage: "details", searchable: false, showInCard: false, group: "רשתות חברתיות" },
+  { key: "instagram", label: "אינסטגרם", type: "text", storage: "details", searchable: false, showInCard: false, group: "רשתות חברתיות" },
+  { key: "twitter", label: "טוויטר (X)", type: "text", storage: "details", searchable: false, showInCard: false, group: "רשתות חברתיות" },
 ];
 
 export function getField(key: string): FieldDef | undefined {

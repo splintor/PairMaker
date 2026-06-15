@@ -9,7 +9,32 @@ import {
   creatorLabel,
   addedByLabel,
   firstName,
+  familyStatusLabel,
+  relationLabel,
 } from "./candidate-display";
+
+describe("familyStatusLabel", () => {
+  it("gender-matches the word", () => {
+    expect(familyStatusLabel("single", "male")).toBe("רווק");
+    expect(familyStatusLabel("single", "female")).toBe("רווקה");
+    expect(familyStatusLabel("divorced", "female")).toBe("גרושה");
+    expect(familyStatusLabel("widowed", "male")).toBe("אלמן");
+  });
+  it("uses slash form when gender is unknown", () => {
+    expect(familyStatusLabel("single", null)).toBe("רווק/ה");
+  });
+  it("returns the raw value for an unknown key", () => {
+    expect(familyStatusLabel("xyz", "male")).toBe("xyz");
+  });
+});
+
+describe("relationLabel", () => {
+  it("gender-matches", () => {
+    expect(relationLabel("male")).toBe("איך הוא קשור אלי?");
+    expect(relationLabel("female")).toBe("איך היא קשורה אלי?");
+    expect(relationLabel(null)).toBe("איך הוא/היא קשור/ה אלי?");
+  });
+});
 
 describe("firstName", () => {
   it("drops the last word of a multi-word name", () => {
