@@ -33,6 +33,7 @@ export const FIELDS: FieldDef[] = [
   { key: "occupation", label: "עיסוק", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
   { key: "heightCm", label: "גובה (ס\"מ)", type: "number", storage: "column", searchable: true, showInCard: true, group: "כללי" },
   { key: "city", label: "עיר", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
+  { key: "phone", label: "מספר טלפון", type: "text", storage: "details", searchable: false, showInCard: false, group: "כללי" },
   // extended fields live in `details` JSONB — demonstrates the no-migration path:
   {
     key: "sector",
