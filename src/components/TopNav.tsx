@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/lib/auth";
+import { NavLink } from "./NavLink";
 import { CommunitySwitcher } from "./CommunitySwitcher";
 import { MobileNav } from "./MobileNav";
 import type { ActiveContext } from "@/lib/community";
@@ -13,19 +14,11 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
       <div className="flex items-center gap-5">
-        <span className="text-lg font-extrabold text-brand-700">💞 PairMaker</span>
+        <Link href="/" className="text-lg font-extrabold text-brand-700">💞 PairMaker</Link>
         <nav className="hidden items-center gap-5 text-sm md:flex" aria-label="ראשי">
-          <Link href="/app/candidates" className="font-medium text-brand-700">
-            מועמדים
-          </Link>
-          <Link href="/app/matches" className="text-slate-500">
-            שידוכים
-          </Link>
-          {ctx.role === "admin" && (
-            <Link href="/app/settings" className="text-slate-500">
-              הגדרות
-            </Link>
-          )}
+          <NavLink href="/app/candidates">מועמדים</NavLink>
+          <NavLink href="/app/matches">שידוכים</NavLink>
+          {ctx.role === "admin" && <NavLink href="/app/settings">הגדרות</NavLink>}
         </nav>
       </div>
 

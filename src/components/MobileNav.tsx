@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { NavLink } from "./NavLink";
 import { CommunitySwitcher } from "./CommunitySwitcher";
 import type { ActiveContext } from "@/lib/community";
 
@@ -77,7 +78,7 @@ export function MobileNav({
             className="fixed inset-y-0 right-0 z-50 flex w-72 max-w-[80%] flex-col gap-4 bg-white p-5 shadow-xl outline-none"
           >
             <div className="flex items-center justify-between">
-              <span className="text-lg font-extrabold text-brand-700">💞 PairMaker</span>
+              <Link href="/" onClick={() => setOpen(false)} className="text-lg font-extrabold text-brand-700">💞 PairMaker</Link>
               <button
                 type="button"
                 aria-label="סגירה"
@@ -89,16 +90,16 @@ export function MobileNav({
             </div>
 
             <nav className="flex flex-col gap-1 text-sm" aria-label="ראשי">
-              <Link href="/app/candidates" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 font-medium text-brand-700 hover:bg-brand-50">
+              <NavLink href="/app/candidates" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 hover:bg-brand-50" inactiveClassName="text-slate-600">
                 מועמדים
-              </Link>
-              <Link href="/app/matches" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 text-slate-600 hover:bg-brand-50">
+              </NavLink>
+              <NavLink href="/app/matches" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 hover:bg-brand-50" inactiveClassName="text-slate-600">
                 שידוכים
-              </Link>
+              </NavLink>
               {ctx.role === "admin" && (
-                <Link href="/app/settings" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 text-slate-600 hover:bg-brand-50">
+                <NavLink href="/app/settings" onClick={() => setOpen(false)} className="rounded-lg px-2 py-2 hover:bg-brand-50" inactiveClassName="text-slate-600">
                   הגדרות
-                </Link>
+                </NavLink>
               )}
             </nav>
 
