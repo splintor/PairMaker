@@ -51,6 +51,7 @@ export async function addMember(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = parseRole(formData.get("role"));
   const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
   if (!email || !email.includes("@")) {
     await setFlash({ type: "error", message: "כתובת אימייל לא תקינה" });
     redirect("/app/settings");
@@ -61,7 +62,11 @@ export async function addMember(formData: FormData) {
   }
 
   await db.$transaction(async (tx) => {
-    const user = await tx.user.upsert({ where: { email }, update: { name }, create: { email, name } });
+    const user = await tx.user.upsert({
+      where: { email },
+      update: phone ? { name, phone } : { name },
+      create: { email, name, phone },
+    });
     const existing = await tx.membership.findUnique({
       where: { userId_communityId: { userId: user.id, communityId: ctx.communityId } },
     });
@@ -166,6 +171,37 @@ export async function setMemberName(membershipId: string, rawName: string) {
 
   revalidatePath("/app/settings");
   revalidatePath("/app", "layout"); // refresh the top bar if the admin renamed themselves
+}
+
+/**
+ * Auto-saved (debounced) phone for a member. Like setMemberName but the phone is
+ * optional — an empty value clears it. `User.phone` is global to the person.
+ */
+export async function setMemberPhone(membershipId: string, rawPhone: string) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const phone = rawPhone.trim() || null;
+  const m = await db.membership.findFirst({
+    where: { id: membershipId, communityId: ctx.communityId },
+    include: { user: true },
+  });
+  if (!m || m.user.phone === phone) return;
+
+  await db.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: m.userId }, data: { phone } });
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "membership",
+      entityId: m.userId,
+      entityLabel: m.user.email ?? m.user.name ?? m.userId,
+      action: "update",
+      actorId: ctx.userId,
+      changes: { phone: { from: m.user.phone, to: phone } },
+    });
+  });
+
+  revalidatePath("/app/settings");
 }
 
 export async function removeMember(membershipId: string) {

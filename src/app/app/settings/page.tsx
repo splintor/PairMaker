@@ -3,6 +3,7 @@ import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { PendingButton } from "@/components/PendingButton";
 import { MemberNameField } from "@/components/MemberNameField";
+import { MemberPhoneField } from "@/components/MemberPhoneField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
 import { RoleToggle } from "@/components/RoleToggle";
 import { addMember, removeMember, renameCommunity } from "./actions";
@@ -47,6 +48,10 @@ export default async function SettingsPage() {
           <span className="mb-1 block text-sm text-slate-600">הוספת שדכן/ית (אימייל)</span>
           <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
+        <label className="flex-1">
+          <span className="mb-1 block text-sm text-slate-600">טלפון (לא חובה)</span>
+          <input name="phone" type="tel" dir="ltr" placeholder="050-1234567" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
+        </label>
         <div>
           <span className="mb-1 block text-sm text-slate-600">תפקיד</span>
           <RoleToggle name="role" defaultValue="member" />
@@ -59,6 +64,7 @@ export default async function SettingsPage() {
           <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <MemberNameField membershipId={m.id} defaultName={m.user.name ?? ""} />
+              <MemberPhoneField membershipId={m.id} defaultPhone={m.user.phone ?? ""} />
               <span className="text-xs text-slate-400">{m.user.email}</span>
             </div>
             <div className="flex items-center gap-2">
