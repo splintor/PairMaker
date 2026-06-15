@@ -28,4 +28,9 @@ describe("whatsappHref", () => {
   it("builds a wa.me link", () => {
     expect(whatsappHref("050-1234567")).toBe("https://wa.me/972501234567");
   });
+  it("appends a url-encoded prefilled message", () => {
+    expect(whatsappHref("050-1234567", "שלום עולם")).toBe(
+      `https://wa.me/972501234567?text=${encodeURIComponent("שלום עולם")}`,
+    );
+  });
 });

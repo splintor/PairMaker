@@ -16,6 +16,7 @@ export function whatsappNumber(phone: string): string {
   return d;
 }
 
-export function whatsappHref(phone: string): string {
-  return `https://wa.me/${whatsappNumber(phone)}`;
+export function whatsappHref(phone: string, text?: string): string {
+  const base = `https://wa.me/${whatsappNumber(phone)}`;
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
