@@ -13,6 +13,7 @@ import { CandidateAvatar } from "@/components/CandidateAvatar";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
 import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
 import { SuggestionItem } from "@/components/SuggestionItem";
+import { PhoneLinks } from "@/components/PhoneLinks";
 import {
   deactivateCandidate,
   reactivateCandidate,
@@ -89,7 +90,13 @@ export default async function CandidateProfile({
           {profileFields.map((f) => (
             <div key={f.key} className="rounded-lg bg-brand-50 p-3">
               <div className="text-xs text-slate-400">{f.label}</div>
-              <div className="text-sm text-slate-700">{valueFor(f.key)}</div>
+              <div className="text-sm text-slate-700">
+                {f.key === "phone" && typeof details.phone === "string" && details.phone ? (
+                  <PhoneLinks phone={details.phone} />
+                ) : (
+                  valueFor(f.key)
+                )}
+              </div>
             </div>
           ))}
         </div>
