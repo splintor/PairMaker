@@ -9,6 +9,8 @@ import { FilterChips } from "@/components/FilterChips";
 import { EmptyState } from "@/components/EmptyState";
 import { LinkButton } from "@/components/ui";
 import { CANDIDATE_VIEW_COOKIE, parseView } from "@/lib/view";
+import { CANDIDATE_FILTER_COOKIE, parseCandidateFilter } from "@/lib/candidate-filter";
+import { CandidateFilterTabs } from "@/components/CandidateFilterTabs";
 import { buildCandidateWhere, type SearchParams } from "@/lib/candidate-search";
 
 export default async function CandidatesPage({
@@ -22,8 +24,11 @@ export default async function CandidatesPage({
   const params: SearchParams = {};
   for (const [k, v] of Object.entries(raw)) params[k] = Array.isArray(v) ? v[0] : v;
 
-  const view = parseView((await cookies()).get(CANDIDATE_VIEW_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const view = parseView(cookieStore.get(CANDIDATE_VIEW_COOKIE)?.value);
+  const filter = parseCandidateFilter(cookieStore.get(CANDIDATE_FILTER_COOKIE)?.value);
   const where = buildCandidateWhere(params, ctx.communityId);
+  if (filter === "mine") (where.AND as object[]).push({ createdById: ctx.userId });
   const candidates = await db.candidate.findMany({
     where,
     orderBy: { updatedAt: "desc" },
@@ -41,7 +46,10 @@ export default async function CandidatesPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-brand-700">מועמדים</h1>
-        <LinkButton href="/app/candidates/new">+ מועמד חדש</LinkButton>
+        <div className="flex items-center gap-3">
+          <CandidateFilterTabs value={filter} />
+          <LinkButton href="/app/candidates/new">+ מועמד חדש</LinkButton>
+        </div>
       </div>
 
       <SearchPanel key={advancedKey} params={params} />
