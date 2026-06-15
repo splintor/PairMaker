@@ -8,6 +8,7 @@ import { requireMembership } from "@/lib/community";
 import { can } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
 import { setFlash } from "@/lib/flash-server";
+import { signIn } from "@/lib/auth";
 
 function parseRole(v: FormDataEntryValue | null): Role {
   return String(v) === "admin" ? "admin" : "member";
@@ -237,5 +238,34 @@ export async function removeMember(membershipId: string) {
 
   revalidatePath("/app/settings");
   await setFlash({ type: "success", message: "השדכן/ית הוסר/ה" });
+  redirect("/app/settings");
+}
+
+/**
+ * Email a member a magic sign-in link (the same Hebrew login email), so an admin
+ * can onboard them without the member having to navigate to the app and type
+ * their address. Sends to the member's email without touching the admin session.
+ */
+export async function sendInvitation(membershipId: string) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const m = await db.membership.findFirst({
+    where: { id: membershipId, communityId: ctx.communityId },
+    include: { user: true },
+  });
+  if (!m?.user.email) {
+    await setFlash({ type: "error", message: "לשדכן/ית אין כתובת אימייל" });
+    redirect("/app/settings");
+  }
+
+  try {
+    await signIn("nodemailer", { email: m.user.email, redirect: false });
+  } catch {
+    await setFlash({ type: "error", message: "שליחת ההזמנה נכשלה" });
+    redirect("/app/settings");
+  }
+
+  await setFlash({ type: "success", message: "הזמנה נשלחה" });
   redirect("/app/settings");
 }

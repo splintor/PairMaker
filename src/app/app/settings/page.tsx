@@ -6,7 +6,7 @@ import { MemberNameField } from "@/components/MemberNameField";
 import { MemberPhoneField } from "@/components/MemberPhoneField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
 import { RoleToggle } from "@/components/RoleToggle";
-import { addMember, removeMember, renameCommunity } from "./actions";
+import { addMember, removeMember, renameCommunity, sendInvitation } from "./actions";
 
 export default async function SettingsPage() {
   const ctx = await requireCapability("member:manage");
@@ -67,8 +67,11 @@ export default async function SettingsPage() {
               <MemberPhoneField membershipId={m.id} defaultPhone={m.user.phone ?? ""} />
               <span className="text-xs text-slate-400">{m.user.email}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <MemberRoleSelect membershipId={m.id} defaultRole={m.role} />
+              <form action={sendInvitation.bind(null, m.id)}>
+                <PendingButton className="text-sm text-brand-600 hover:underline disabled:opacity-60">שליחת הזמנה</PendingButton>
+              </form>
               <form action={removeMember.bind(null, m.id)}>
                 <PendingButton className="text-sm text-red-600 hover:underline disabled:opacity-60">הסרה</PendingButton>
               </form>

@@ -2,8 +2,10 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Google from "next-auth/providers/google";
 import Nodemailer from "next-auth/providers/nodemailer";
+import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
 import { recordLogin } from "@/lib/audit-login";
+import { magicLinkEmail } from "@/lib/auth-email";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
@@ -32,6 +34,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
       from: process.env.EMAIL_FROM,
+      // Send our Hebrew (RTL) sign-in email instead of the English default.
+      async sendVerificationRequest({ identifier, url, provider }) {
+        const { subject, text, html } = magicLinkEmail(url);
+        const transport = nodemailer.createTransport(provider.server);
+        await transport.sendMail({ to: identifier, from: provider.from, subject, text, html });
+      },
     }),
   ],
   callbacks: {
