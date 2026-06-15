@@ -6,7 +6,7 @@ import { Select } from "@/components/Select";
 import { changeMemberRole } from "@/app/app/settings/actions";
 
 const ROLE_OPTIONS = [
-  { value: "member", label: "חבר/ה" },
+  { value: "member", label: "שדכן/ית" },
   { value: "admin", label: "מנהל/ת" },
 ];
 

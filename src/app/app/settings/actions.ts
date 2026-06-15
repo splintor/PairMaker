@@ -81,7 +81,7 @@ export async function addMember(formData: FormData) {
   });
 
   revalidatePath("/app/settings");
-  await setFlash({ type: "success", message: "החבר/ה נוסף/ה" });
+  await setFlash({ type: "success", message: "השדכן/ית נוסף/ה" });
   redirect("/app/settings");
 }
 
@@ -104,7 +104,7 @@ export async function changeMemberRole(
     where: { id: membershipId, communityId: ctx.communityId },
     include: { user: true },
   });
-  if (!m) return { ok: false, error: "החבר/ה לא נמצא/ה" };
+  if (!m) return { ok: false, error: "השדכן/ית לא נמצא/ה" };
   if (m.role === role) return { ok: true };
 
   // Last-admin guard: don't demote the final admin.
@@ -197,6 +197,6 @@ export async function removeMember(membershipId: string) {
   });
 
   revalidatePath("/app/settings");
-  await setFlash({ type: "success", message: "החבר/ה הוסר/ה" });
+  await setFlash({ type: "success", message: "השדכן/ית הוסר/ה" });
   redirect("/app/settings");
 }

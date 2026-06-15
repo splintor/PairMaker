@@ -37,9 +37,9 @@ export function describeAudit(e: AuditView): AuditParts {
   }
   if (e.entityType === "membership") {
     const prefix: Record<string, string> = {
-      create: "חבר/ה נוסף/ה: ",
+      create: "שדכן/ית נוסף/ה: ",
       update: "תפקיד עודכן: ",
-      delete: "חבר/ה הוסר/ה: ",
+      delete: "שדכן/ית הוסר/ה: ",
     };
     if (prefix[e.action]) return { before: prefix[e.action], label: name, after: "" };
   }

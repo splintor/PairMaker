@@ -8,7 +8,7 @@ import { MemberRoleSelect } from "@/components/MemberRoleSelect";
 import { addMember, removeMember, renameCommunity } from "./actions";
 
 const ROLE_OPTIONS = [
-  { value: "member", label: "חבר/ה" },
+  { value: "member", label: "שדכן/ית" },
   { value: "admin", label: "מנהל/ת" },
 ];
 
@@ -41,7 +41,7 @@ export default async function SettingsPage() {
         <PendingButton>שמירה</PendingButton>
       </form>
 
-      <h2 className="text-lg font-bold text-brand-700">חברי הקהילה</h2>
+      <h2 className="text-lg font-bold text-brand-700">שדכני הקהילה</h2>
 
       <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
         <label className="flex-1">
@@ -49,7 +49,7 @@ export default async function SettingsPage() {
           <input name="name" type="text" dir="rtl" required placeholder="שם מלא" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <label className="flex-1">
-          <span className="mb-1 block text-sm text-slate-600">הוספת חבר/ה (אימייל)</span>
+          <span className="mb-1 block text-sm text-slate-600">הוספת שדכן/ית (אימייל)</span>
           <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <div className="w-32">

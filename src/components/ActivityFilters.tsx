@@ -6,7 +6,7 @@ const ENTITY_OPTIONS = [
   { value: "", label: "הכל" },
   { value: "candidate", label: "מועמדים" },
   { value: "suggestion", label: "שידוכים" },
-  { value: "membership", label: "חברים" },
+  { value: "membership", label: "שדכנים" },
   { value: "community", label: "קהילה" },
   { value: "auth", label: "התחברויות" },
 ];
