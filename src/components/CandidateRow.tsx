@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Candidate } from "@prisma/client";
 import { displayAge, ageLabel, smokingLabel, creatorLabel, addedByLabel } from "@/lib/candidate-display";
-import { StatusPill } from "@/components/ui";
 import { CandidateAvatar } from "@/components/CandidateAvatar";
 
 type RowCandidate = Candidate & {
@@ -19,10 +18,16 @@ export function CandidateRow({ c }: { c: RowCandidate }) {
     details.smoking === true ? smokingLabel(c.gender) : null,
   ].filter(Boolean);
 
+  const inactive = c.status !== "active";
+
   return (
     <Link
       href={`/app/candidates/${c.id}`}
-      className="flex items-center gap-3 rounded-lg border border-brand-200 bg-white px-4 py-3 hover:bg-brand-50"
+      className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
+        inactive
+          ? "border-slate-200 bg-slate-100 hover:bg-slate-200"
+          : "border-brand-200 bg-white hover:bg-brand-50"
+      }`}
     >
       <CandidateAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} size="sm" />
       <div className="min-w-0 flex-1">
@@ -32,7 +37,6 @@ export function CandidateRow({ c }: { c: RowCandidate }) {
       <span className="hidden shrink-0 text-xs text-slate-400 sm:inline">
         {addedByLabel(c.gender)} {creatorLabel(c.createdBy)}
       </span>
-      <StatusPill active={c.status === "active"} gender={c.gender} />
     </Link>
   );
 }
