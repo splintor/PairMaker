@@ -44,11 +44,19 @@ export default async function CandidatesPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-brand-700">מועמדים</h1>
-        <div className="flex items-center gap-3">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold text-brand-700">מועמדים</h1>
+          <div className="flex items-center gap-3">
+            {/* Inline with the title on desktop; drops to its own row on mobile. */}
+            <div className="hidden sm:block">
+              <CandidateFilterTabs value={filter} />
+            </div>
+            <LinkButton href="/app/candidates/new">+ מועמד חדש</LinkButton>
+          </div>
+        </div>
+        <div className="flex justify-end sm:hidden">
           <CandidateFilterTabs value={filter} />
-          <LinkButton href="/app/candidates/new">+ מועמד חדש</LinkButton>
         </div>
       </div>
 
@@ -76,18 +84,30 @@ export default async function CandidatesPage({
             action={<LinkButton href="/app/candidates/new">+ הוסף מועמד</LinkButton>}
           />
         )
-      ) : view === "list" ? (
-        <div className="space-y-2">
-          {candidates.map((c) => (
-            <CandidateRow key={c.id} c={c} />
-          ))}
-        </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {candidates.map((c) => (
-            <CandidateCard key={c.id} c={c} />
-          ))}
-        </div>
+        <>
+          {/* "auto": list on mobile, tiles on desktop. Explicit choice shows one everywhere. */}
+          {(view === "list" || view === "auto") && (
+            <div className={`space-y-2 ${view === "auto" ? "sm:hidden" : ""}`}>
+              {candidates.map((c) => (
+                <CandidateRow key={c.id} c={c} />
+              ))}
+            </div>
+          )}
+          {(view === "tiles" || view === "auto") && (
+            <div
+              className={
+                view === "auto"
+                  ? "hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-3"
+                  : "grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              }
+            >
+              {candidates.map((c) => (
+                <CandidateCard key={c.id} c={c} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
