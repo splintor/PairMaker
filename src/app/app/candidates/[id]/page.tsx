@@ -79,15 +79,17 @@ export default async function CandidateProfile({
       <Link href="/app/candidates" className="text-sm text-brand-600">→ חזרה לרשימה</Link>
 
       <Card>
-        <div className="flex items-start gap-4">
-          <CandidateAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} size="lg" />
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-extrabold text-brand-700">{c.name}</h1>
-              <StatusPill active={c.status === "active"} gender={c.gender} />
-            </div>
-            <div className="text-sm text-brand-600">
-              {[ageLabel(c.gender, age), c.occupation].filter(Boolean).join(" · ")}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="flex flex-1 items-start gap-4">
+            <CandidateAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} size="lg" />
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-extrabold text-brand-700">{c.name}</h1>
+                <StatusPill active={c.status === "active"} gender={c.gender} />
+              </div>
+              <div className="text-sm text-brand-600">
+                {[ageLabel(c.gender, age), c.occupation].filter(Boolean).join(" · ")}
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
