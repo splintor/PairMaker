@@ -137,7 +137,7 @@ export default async function CandidateProfile({
           <span>{addedByLabel(c.gender)} {creatorLabel(c.createdBy)}</span>
           {canEdit &&
             (c.status === "active" ? (
-              <DeactivateDialog action={deactivateAction} />
+              <DeactivateDialog action={deactivateAction} gender={c.gender} />
             ) : (
               <form action={reactivateAction}>
                 <button className="text-sm text-emerald-700 hover:underline">החזרה לפעילות</button>

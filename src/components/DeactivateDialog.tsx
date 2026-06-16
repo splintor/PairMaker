@@ -3,11 +3,14 @@ import { useState } from "react";
 import { DEACTIVATION_REASONS } from "@/lib/constants";
 import { Select } from "@/components/Select";
 import { PendingButton } from "@/components/PendingButton";
+import { statusLabel } from "@/lib/candidate-display";
 
 export function DeactivateDialog({
   action,
+  gender,
 }: {
   action: (formData: FormData) => void;
+  gender?: "male" | "female" | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -18,7 +21,7 @@ export function DeactivateDialog({
         onClick={() => setOpen(true)}
         className="text-sm text-amber-700 hover:underline"
       >
-        ⚠️ השבתת מועמד/ת
+        הפוך ל{statusLabel(gender, false)}
       </button>
 
       {open && (
@@ -31,7 +34,7 @@ export function DeactivateDialog({
             onClick={(e) => e.stopPropagation()}
           >
             <form action={action} className="space-y-3">
-              <h2 className="font-bold text-brand-700">השבתת מועמד/ת</h2>
+              <h2 className="font-bold text-brand-700">הפוך ל{statusLabel(gender, false)}</h2>
               <div className="block text-sm text-slate-600">
                 סיבה
                 <div className="mt-1">
