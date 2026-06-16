@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { describeAudit, auditHref } from "@/lib/audit-format";
+import { relativeTimeHe } from "@/lib/relative-time";
 import { ActivityFilters } from "@/components/ActivityFilters";
 import { ReloadButton } from "@/components/ReloadButton";
 import { EmptyState } from "@/components/EmptyState";
@@ -97,7 +98,9 @@ export default async function ActivityPage({
                   )}
                   {parts.after}
                 </span>
-                <span className="shrink-0 text-xs text-slate-400">{fmtTime(l.createdAt)}</span>
+                <span className="shrink-0 cursor-default text-xs text-slate-400" title={fmtTime(l.createdAt)}>
+                  {relativeTimeHe(l.createdAt)}
+                </span>
               </div>
               <div className="mt-1 text-xs text-slate-400">
                 {l.source === "bot" ? "🤖 בוט" : `ע״י ${nameById.get(l.actorId ?? "") || "—"}`}
