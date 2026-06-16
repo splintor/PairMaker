@@ -134,7 +134,7 @@ export function SearchPanel({ params }: { params: SearchParams }) {
             onClick={() => setAdvancedOpen((o) => !o)}
             title="חיפוש מתקדם"
             aria-label="חיפוש מתקדם"
-            className={`shrink-0 rounded-full p-1.5 hover:bg-brand-50 ${advancedOpen ? "bg-brand-50 text-brand-700" : "text-slate-500"}`}
+            className={`me-1 shrink-0 rounded-full p-1.5 hover:bg-brand-50 ${advancedOpen ? "bg-brand-50 text-brand-700" : "text-slate-500"}`}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="3" y1="7" x2="15" y2="7" />
