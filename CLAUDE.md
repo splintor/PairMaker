@@ -25,7 +25,9 @@ panel**, and **profile display**. Each field declares: `type` (text|longtext|num
 into `{columns, details, errors}` (skips virtual fields; booleans always resolve to true/false, never
 skipped). To add a candidate attribute you usually just add a `FieldDef` (JSONB-stored fields need
 **no migration**). The `boolean` type is fully wired (form checkbox, tri-state search select, profile
-כן/לא); `smoking` is the first boolean field.
+כן/לא); `smoking` is the first boolean field. The candidate name is split into `firstName` + `lastName`
+fields (both required); the action denormalizes them into the `name` column (kept for search/display/
+suggestions), so most code keeps using `name`.
 
 ### Search (`src/lib/candidate-search.ts`)
 `buildCandidateWhere(params, communityId)` turns URL search params into a Prisma `where`. Quick search
@@ -50,12 +52,16 @@ active/inactive. Age is entered as a number in the form and converted to a birth
 month/day, year = currentYear − age) by the server action.
 
 ### Photos
-Pipeline: `PhotoPicker.tsx` (client) downscales to ≤1280px JPEG → `POST /api/candidates/photo`
-(`src/app/api/candidates/photo/route.ts`) stores to Blob, returns a `handle` → saved as
-`Candidate.photoUrl`. Served (membership-gated) via `GET /api/candidates/[id]/photo`.
-`src/lib/blob.ts` (store/read/delete), `src/lib/photo.ts` (validation, type/ext). Avatars are circular
-(`CandidateAvatar.tsx`, `object-cover`). On select, `PhotoCropModal.tsx` (react-easy-crop) shows a
-circular 1:1 crop; the cropped ≤512px JPEG is what gets uploaded.
+A candidate has up to `MAX_PHOTOS` (5) photos: `Candidate.photos` (ordered blob handles) with
+`photoUrl` mirroring `photos[0]` (the primary/avatar) so single-photo code is unchanged. Pipeline:
+`PhotoPicker.tsx` (client, multi-photo: add/remove/"make primary") → `POST /api/candidates/photo`
+(`src/app/api/candidates/photo/route.ts`, blocked-user gated) stores to Blob, returns a `handle`;
+the form submits the ordered handles as a JSON array in a hidden input and the action sets
+`photos`/`photoUrl` (deleting dropped blobs). Served (membership-gated) via
+`GET /api/candidates/[id]/photo` — default serves the primary, `?h=<handle>` serves a specific photo
+validated against `photos`. `candidatePhotoSrc` (primary) / `candidatePhotoSrcByHandle` (a photo).
+Profile shows a `PhotoGallery.tsx` thumbnail strip + lightbox. `src/lib/blob.ts`, `src/lib/photo.ts`.
+On select, `PhotoCropModal.tsx` (react-easy-crop) does a 1:1 crop; the cropped ≤512px JPEG is uploaded.
 
 ### Audit log
 Every candidate/suggestion mutation writes an `AuditLog` row inside the same transaction via
@@ -72,15 +78,21 @@ Activity feed at `/app/activity`.
   (`requireMembership` — sources `userName`/`userEmail` from the DB, not the JWT, so name changes show
   in the top bar). Active community: `src/lib/active-community.ts`.
 - Settings (`src/app/app/settings/`): admins (`member:manage`) add members (name **required**) and
-  rename any member (`setMemberName`) — `User.name` is global to the person across communities.
+  rename any member (`setMemberName`) — `User.name` is global to the person across communities. Each
+  member row has a `MemberActionsMenu` (kebab): email invite, WhatsApp invite (when a phone exists),
+  block/unblock (`setMemberBlocked`), remove. WhatsApp invite reuses the magic sign-in link —
+  `captureMagicLink` (in `auth.ts`) hands the URL to the client instead of emailing it.
+- **Global block:** `User.blockedAt` bars a user from the whole app. `requireMembership` (and the photo
+  upload route) redirect a blocked user to `/blocked` (top-level, outside `/app`) even mid-session.
+  Admin-only; can't block yourself.
 
 ## Schema notes (`prisma/schema.prisma`)
-`Candidate`: name, gender (enum), `birthdate?` (stores year-of-birth; the form's "גיל" age input is
-converted to it on save — `ageManual` was removed), occupation, heightCm, city, `requirements` (Text),
-`photoUrl`, `details` (JSONB; holds `sector`, `education`, `smoking`),
-`status` (active|inactive) + deactivation fields, `createdById`. Phase-2 provenance fields
-(sourceMessageId/rawText/parsedJson) are present but unused. `Suggestion` enforces one per unordered
-pair via `pairKey`.
+`Candidate`: `name` (denormalized full name) + `firstName`/`lastName`, gender (enum), `birthdate?`
+(stores year-of-birth; the form's "גיל" age input is converted to it on save — `ageManual` was removed),
+occupation, heightCm, city, `requirements` (Text), `photoUrl` (= `photos[0]`), `photos` (String[]),
+`details` (JSONB; holds `sector`, `education`, `smoking`, …), `status` (active|inactive) + deactivation
+fields, `createdById`. Phase-2 provenance fields (sourceMessageId/rawText/parsedJson) are present but
+unused. `User.blockedAt?` is a global block flag. `Suggestion` enforces one per unordered pair via `pairKey`.
 
 ## Conventions
 - **Workflow:** single-developer project — do **not** use feature branches. Commit directly to `main`,
