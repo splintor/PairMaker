@@ -20,6 +20,13 @@ async function loadOwned(ctx: ActiveContext, id: string) {
   return c;
 }
 
+/** Denormalized full name from the split first/last name columns. */
+function fullName(columns: Record<string, unknown>): string {
+  const first = String(columns.firstName ?? "").trim();
+  const last = String(columns.lastName ?? "").trim();
+  return [first, last].filter(Boolean).join(" ");
+}
+
 /** Convert the form's age input to a birthdate. Returns "invalid" for a malformed age. */
 function birthdateFromForm(formData: FormData): Date | null | "invalid" {
   const raw = String(formData.get("age") ?? "").trim();
@@ -51,6 +58,7 @@ export async function createCandidate(formData: FormData) {
         createdById: ctx.userId,
         photoUrl,
         birthdate,
+        name: fullName(columns),
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedCreateInput,
@@ -99,6 +107,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       data: {
         photoUrl,
         birthdate,
+        name: fullName(columns),
         details: details as Prisma.InputJsonValue,
         ...(columns as Record<string, unknown>),
       } as Prisma.CandidateUncheckedUpdateInput,
@@ -109,6 +118,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       afterFlat as Record<string, unknown>,
     );
     delete changes.updatedAt;
+    delete changes.name; // redundant — firstName/lastName changes are already diffed
     delete changes.details; // detail keys are already diffed individually; drop the redundant blob
     delete changes.photoUrl; // blob handle — don't print in the activity log
     delete changes.birthdate; // raw date — age is surfaced elsewhere; don't print a noisy diff

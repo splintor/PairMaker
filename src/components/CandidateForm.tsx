@@ -149,15 +149,13 @@ export function CandidateForm({
               // children — children toggling visibility then can't shift it.
               const span =
                 field.type === "longtext" || field.key === "smoking" || field.key === "relation" ? "sm:col-span-2" : "";
-              // Some form labels are spelled out / gender-matched to the candidate.
+              // Some form labels are gender-matched to the candidate.
               const labelText =
-                field.key === "name"
-                  ? "שם פרטי + שם משפחה"
-                  : field.key === "requirements"
-                    ? requirementsLabel(asGender(gender))
-                    : field.key === "relation"
-                      ? relationLabel(asGender(gender))
-                      : field.label;
+                field.key === "requirements"
+                  ? requirementsLabel(asGender(gender))
+                  : field.key === "relation"
+                    ? relationLabel(asGender(gender))
+                    : field.label;
               const labelInner = (
                 <>
                   <span className="mb-1 block text-sm text-slate-600">

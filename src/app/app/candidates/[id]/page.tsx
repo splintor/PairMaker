@@ -54,7 +54,7 @@ export default async function CandidateProfile({
   const relationEmpty = !(typeof details.relation === "string" && details.relation.trim());
   const profileFields = FIELDS.filter(
     (f) =>
-      !["name", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key) &&
+      !["firstName", "lastName", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key) &&
       // Skip the "how are they related to me?" row when it's empty.
       !(f.key === "relation" && relationEmpty),
   );

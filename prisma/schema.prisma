@@ -78,7 +78,11 @@ model Membership {
 model Candidate {
   id                 String          @id @default(cuid())
   communityId        String
+  // `name` is the denormalized full name (firstName + lastName), kept in sync on
+  // save so search/display/suggestions can keep using a single field.
   name               String
+  firstName          String          @default("")
+  lastName           String          @default("")
   gender             Gender
   birthdate          DateTime?
   occupation         String?

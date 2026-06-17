@@ -27,7 +27,10 @@ export const GENDER_OPTIONS: FieldOption[] = [
 ];
 
 export const FIELDS: FieldDef[] = [
-  { key: "name", label: "שם", type: "text", storage: "column", required: true, searchable: true, showInCard: true, group: "כללי" },
+  // firstName/lastName are the source of truth; the action denormalizes them into
+  // `name`. Not searchable as advanced filters — quick search (q) covers full name.
+  { key: "firstName", label: "שם פרטי", type: "text", storage: "column", required: true, searchable: false, showInCard: false, group: "כללי" },
+  { key: "lastName", label: "שם משפחה", type: "text", storage: "column", required: true, searchable: false, showInCard: false, group: "כללי" },
   { key: "gender", label: "מגדר", type: "select", storage: "column", required: true, options: GENDER_OPTIONS, searchable: true, showInCard: true, group: "כללי", widget: "toggle" },
   { key: "age", label: "גיל", type: "number", storage: "virtual", searchable: true, showInCard: false, group: "כללי" },
   { key: "occupation", label: "עיסוק", type: "text", storage: "column", searchable: true, showInCard: true, group: "כללי" },
