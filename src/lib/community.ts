@@ -25,6 +25,13 @@ export async function requireMembership(): Promise<ActiveContext> {
   const session = await auth();
   if (!session?.user?.id) redirect("/signin");
 
+  // Global block: bars the user from the whole app, even an existing session.
+  const account = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { blockedAt: true },
+  });
+  if (account?.blockedAt) redirect("/blocked");
+
   const rows = await db.membership.findMany({
     where: { userId: session.user.id },
     include: { community: true, user: { select: { name: true, email: true } } },

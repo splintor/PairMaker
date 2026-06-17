@@ -8,9 +8,12 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  // Must be a member of at least one community.
-  const member = await db.membership.findFirst({ where: { userId: session.user.id } });
-  if (!member) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  // Must be a member of at least one community, and not globally blocked.
+  const member = await db.membership.findFirst({
+    where: { userId: session.user.id },
+    select: { user: { select: { blockedAt: true } } },
+  });
+  if (!member || member.user.blockedAt) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const form = await req.formData();
   const file = form.get("file");

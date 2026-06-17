@@ -40,6 +40,8 @@ model User {
   name          String?
   email         String?      @unique
   phone         String?
+  // Global block (admin-set): a non-null value bars the user from the whole app.
+  blockedAt     DateTime?
   emailVerified DateTime?
   image         String?
   accounts      Account[]

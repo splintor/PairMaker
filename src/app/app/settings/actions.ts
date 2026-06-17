@@ -8,7 +8,9 @@ import { requireMembership } from "@/lib/community";
 import { can } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
 import { setFlash } from "@/lib/flash-server";
-import { signIn } from "@/lib/auth";
+import { signIn, captureMagicLink } from "@/lib/auth";
+import { whatsappHref } from "@/lib/phone";
+import { magicLinkWhatsappMessage } from "@/lib/auth-email";
 
 function parseRole(v: FormDataEntryValue | null): Role {
   return String(v) === "admin" ? "admin" : "member";
@@ -203,6 +205,74 @@ export async function setMemberPhone(membershipId: string, rawPhone: string) {
   });
 
   revalidatePath("/app/settings");
+}
+
+/**
+ * Block or unblock a member globally (admin only). A blocked user is barred from
+ * the whole app on their next request, even with an existing session. Blocking is
+ * global because users are shared across communities. You can't block yourself.
+ */
+export async function setMemberBlocked(membershipId: string, blocked: boolean) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const m = await db.membership.findFirst({
+    where: { id: membershipId, communityId: ctx.communityId },
+    include: { user: true },
+  });
+  if (!m) redirect("/app/settings");
+  if (m.userId === ctx.userId) {
+    await setFlash({ type: "error", message: "אי אפשר לחסום את עצמך" });
+    redirect("/app/settings");
+  }
+  if (!!m.user.blockedAt === blocked) redirect("/app/settings"); // no change
+
+  await db.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: m.userId }, data: { blockedAt: blocked ? new Date() : null } });
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "membership",
+      entityId: m.userId,
+      entityLabel: m.user.email ?? m.user.name ?? m.userId,
+      action: "update",
+      actorId: ctx.userId,
+      changes: { blocked: { from: !!m.user.blockedAt, to: blocked } },
+    });
+  });
+
+  revalidatePath("/app/settings");
+  await setFlash({ type: "success", message: blocked ? "השדכן/ית נחסם/ה" : "החסימה בוטלה" });
+  redirect("/app/settings");
+}
+
+export type WhatsappInviteResult = { ok: true; href: string } | { ok: false; error: string };
+
+/**
+ * Build a WhatsApp link containing a magic sign-in URL (the same link as the
+ * email invitation). Generates the link via captureMagicLink so it's returned to
+ * the client instead of emailed; the client opens WhatsApp with it.
+ */
+export async function whatsappInviteHref(membershipId: string): Promise<WhatsappInviteResult> {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const m = await db.membership.findFirst({
+    where: { id: membershipId, communityId: ctx.communityId },
+    include: { user: true },
+  });
+  if (!m) return { ok: false, error: "השדכן/ית לא נמצא/ה" };
+  if (!m.user.phone) return { ok: false, error: "לשדכן/ית אין מספר טלפון" };
+  if (!m.user.email) return { ok: false, error: "לשדכן/ית אין כתובת אימייל" };
+
+  const email = m.user.email.toLowerCase();
+  try {
+    const capture = captureMagicLink(email);
+    await signIn("nodemailer", { email, redirect: false });
+    const url = await capture;
+    return { ok: true, href: whatsappHref(m.user.phone, magicLinkWhatsappMessage(url)) };
+  } catch {
+    return { ok: false, error: "יצירת ההזמנה נכשלה" };
+  }
 }
 
 export async function removeMember(membershipId: string) {

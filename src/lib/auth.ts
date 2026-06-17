@@ -7,6 +7,25 @@ import { db } from "@/lib/db";
 import { recordLogin } from "@/lib/audit-login";
 import { magicLinkEmail } from "@/lib/auth-email";
 
+/**
+ * Lets the "send WhatsApp invitation" flow obtain the magic-link URL instead of
+ * emailing it. While a capture is pending for an email, sendVerificationRequest
+ * resolves it with the URL and skips the email. Same-process, short-lived.
+ */
+const magicLinkCaptures = new Map<string, (url: string) => void>();
+
+export function captureMagicLink(email: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      if (magicLinkCaptures.delete(email)) reject(new Error("magic-link capture timed out"));
+    }, 10_000);
+    magicLinkCaptures.set(email, (url) => {
+      clearTimeout(timer);
+      resolve(url);
+    });
+  });
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   // JWT sessions avoid a DB round-trip on every request (faster navigation).
@@ -36,6 +55,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.EMAIL_FROM,
       // Send our Hebrew (RTL) sign-in email instead of the English default.
       async sendVerificationRequest({ identifier, url, provider }) {
+        // If a WhatsApp invite is waiting for this link, hand it over and skip email.
+        const capture = magicLinkCaptures.get(identifier);
+        if (capture) {
+          magicLinkCaptures.delete(identifier);
+          capture(url);
+          return;
+        }
         const { subject, text, html } = magicLinkEmail(url);
         const transport = nodemailer.createTransport(provider.server);
         await transport.sendMail({ to: identifier, from: provider.from, subject, text, html });

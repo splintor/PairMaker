@@ -5,8 +5,9 @@ import { PendingButton } from "@/components/PendingButton";
 import { MemberNameField } from "@/components/MemberNameField";
 import { MemberPhoneField } from "@/components/MemberPhoneField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
+import { MemberActionsMenu } from "@/components/MemberActionsMenu";
 import { RoleToggle } from "@/components/RoleToggle";
-import { addMember, removeMember, renameCommunity, sendInvitation } from "./actions";
+import { addMember, renameCommunity } from "./actions";
 
 export default async function SettingsPage() {
   const ctx = await requireCapability("member:manage");
@@ -60,24 +61,36 @@ export default async function SettingsPage() {
       </form>
 
       <div className="space-y-2">
-        {members.map((m) => (
-          <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <MemberNameField membershipId={m.id} defaultName={m.user.name ?? ""} />
-              <MemberPhoneField membershipId={m.id} defaultPhone={m.user.phone ?? ""} />
-              <span className="text-xs text-slate-400">{m.user.email}</span>
+        {members.map((m) => {
+          const blocked = m.user.blockedAt != null;
+          return (
+            <div
+              key={m.id}
+              className={`flex flex-wrap items-center justify-between gap-2 rounded-xl2 border p-4 ${
+                blocked ? "border-slate-200 bg-slate-100" : "border-brand-200 bg-white"
+              }`}
+            >
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <MemberNameField membershipId={m.id} defaultName={m.user.name ?? ""} />
+                {blocked && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">חסום/ה</span>
+                )}
+                <MemberPhoneField membershipId={m.id} defaultPhone={m.user.phone ?? ""} />
+                <span className="text-xs text-slate-400">{m.user.email}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MemberRoleSelect membershipId={m.id} defaultRole={m.role} />
+                <MemberActionsMenu
+                  membershipId={m.id}
+                  blocked={blocked}
+                  hasPhone={!!m.user.phone}
+                  hasEmail={!!m.user.email}
+                  isSelf={m.userId === ctx.userId}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <MemberRoleSelect membershipId={m.id} defaultRole={m.role} />
-              <form action={sendInvitation.bind(null, m.id)}>
-                <PendingButton className="text-sm text-brand-600 hover:underline disabled:opacity-60">שליחת הזמנה</PendingButton>
-              </form>
-              <form action={removeMember.bind(null, m.id)}>
-                <PendingButton className="text-sm text-red-600 hover:underline disabled:opacity-60">הסרה</PendingButton>
-              </form>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
