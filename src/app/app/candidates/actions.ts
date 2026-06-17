@@ -8,6 +8,7 @@ import { requireMembership, type ActiveContext } from "@/lib/community";
 import { can, canEditCandidate } from "@/lib/permissions";
 import { ageToBirthdate } from "@/lib/candidate-display";
 import { buildCandidateInput } from "@/lib/fields";
+import { MAX_PHOTOS } from "@/lib/photo";
 import { computeChanges } from "@/lib/audit-diff";
 import { writeAudit } from "@/lib/audit";
 import { setFlash } from "@/lib/flash-server";
@@ -18,6 +19,18 @@ async function loadOwned(ctx: ActiveContext, id: string) {
   if (!c) redirect("/app/candidates");
   if (!canEditCandidate(ctx.role, ctx.userId, c)) redirect(`/app/candidates/${id}`);
   return c;
+}
+
+/** Parse the form's JSON photo-handle array; keep only non-empty strings, capped. */
+function parsePhotos(raw: FormDataEntryValue | null): string[] {
+  if (typeof raw !== "string" || !raw) return [];
+  try {
+    const arr: unknown = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((h): h is string => typeof h === "string" && h.length > 0).slice(0, MAX_PHOTOS);
+  } catch {
+    return [];
+  }
 }
 
 /** Denormalized full name from the split first/last name columns. */
@@ -49,7 +62,8 @@ export async function createCandidate(formData: FormData) {
   const birthdate = birthdateFromForm(formData);
   if (birthdate === "invalid") redirect(`/app/candidates/new?error=validation`);
 
-  const photoUrl = String(formData.get("photoUrl") ?? "").trim() || null;
+  const photos = parsePhotos(formData.get("photos"));
+  const photoUrl = photos[0] ?? null;
 
   const created = await db.$transaction(async (tx) => {
     const c = await tx.candidate.create({
@@ -57,6 +71,7 @@ export async function createCandidate(formData: FormData) {
         communityId: ctx.communityId,
         createdById: ctx.userId,
         photoUrl,
+        photos,
         birthdate,
         name: fullName(columns),
         details: details as Prisma.InputJsonValue,
@@ -97,8 +112,10 @@ export async function updateCandidate(id: string, formData: FormData) {
     redirect(`/app/candidates/${id}/edit`);
   }
 
-  const photoUrl = String(formData.get("photoUrl") ?? "").trim() || null;
-  const oldPhotoUrl = existing.photoUrl;
+  const photos = parsePhotos(formData.get("photos"));
+  const photoUrl = photos[0] ?? null;
+  // Blobs dropped from the list are deleted after the row is updated.
+  const removedPhotos = existing.photos.filter((h) => !photos.includes(h));
 
   const beforeFlat = { ...existing, ...(existing.details as object) };
   await db.$transaction(async (tx) => {
@@ -106,6 +123,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       where: { id },
       data: {
         photoUrl,
+        photos,
         birthdate,
         name: fullName(columns),
         details: details as Prisma.InputJsonValue,
@@ -121,6 +139,7 @@ export async function updateCandidate(id: string, formData: FormData) {
     delete changes.name; // redundant — firstName/lastName changes are already diffed
     delete changes.details; // detail keys are already diffed individually; drop the redundant blob
     delete changes.photoUrl; // blob handle — don't print in the activity log
+    delete changes.photos; // blob handles — don't print in the activity log
     delete changes.birthdate; // raw date — age is surfaced elsewhere; don't print a noisy diff
     if (Object.keys(changes).length > 0) {
       await writeAudit(tx, {
@@ -135,9 +154,9 @@ export async function updateCandidate(id: string, formData: FormData) {
     }
   });
 
-  if (oldPhotoUrl && oldPhotoUrl !== photoUrl) {
+  if (removedPhotos.length > 0) {
     const { deleteCandidatePhoto } = await import("@/lib/blob");
-    await deleteCandidatePhoto(oldPhotoUrl);
+    await Promise.all(removedPhotos.map((h) => deleteCandidatePhoto(h)));
   }
 
   revalidatePath(`/app/candidates/${id}`);
@@ -225,9 +244,11 @@ export async function deleteCandidate(id: string) {
     await tx.candidate.delete({ where: { id } });
   });
 
-  if (existing.photoUrl) {
+  // Remove every stored photo (fall back to the primary for legacy rows).
+  const toDelete = existing.photos.length > 0 ? existing.photos : existing.photoUrl ? [existing.photoUrl] : [];
+  if (toDelete.length > 0) {
     const { deleteCandidatePhoto } = await import("@/lib/blob");
-    await deleteCandidatePhoto(existing.photoUrl);
+    await Promise.all(toDelete.map((h) => deleteCandidatePhoto(h)));
   }
 
   revalidatePath("/app/candidates");

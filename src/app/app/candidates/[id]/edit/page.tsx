@@ -30,6 +30,7 @@ export default async function EditCandidatePage({
       <CandidateForm
         action={action}
         values={values as Record<string, string | number | null | undefined>}
+        photos={c.photos}
         submitLabel="שמירה"
         cancelHref={`/app/candidates/${id}`}
       />

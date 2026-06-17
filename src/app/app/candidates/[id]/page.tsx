@@ -15,6 +15,7 @@ import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
 import { SuggestionItem } from "@/components/SuggestionItem";
 import { PhoneLinks } from "@/components/PhoneLinks";
 import { SocialLinks } from "@/components/SocialLinks";
+import { PhotoGallery } from "@/components/PhotoGallery";
 import {
   deactivateCandidate,
   reactivateCandidate,
@@ -101,6 +102,8 @@ export default async function CandidateProfile({
             {canEdit && <LinkButton href={`/app/candidates/${id}/edit`}>עריכה</LinkButton>}
           </div>
         </div>
+
+        <PhotoGallery candidateId={c.id} photos={c.photos} />
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {profileFields.map((f) => (

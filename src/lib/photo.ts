@@ -1,5 +1,6 @@
 export const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5 MB
+export const MAX_PHOTOS = 5; // photos per candidate (first = avatar)
 
 export type PhotoValidation = { ok: true } | { ok: false; message: string };
 
@@ -25,4 +26,13 @@ export function extForType(type: string): string {
  */
 export function candidatePhotoSrc(id: string, photoUrl: string): string {
   return `/api/candidates/${id}/photo?v=${encodeURIComponent(photoUrl)}`;
+}
+
+/**
+ * URL for a specific (non-primary) photo of a candidate by its blob handle. The
+ * served route validates the handle is one of the candidate's photos. The handle
+ * doubles as the cache-busting token.
+ */
+export function candidatePhotoSrcByHandle(id: string, handle: string): string {
+  return `/api/candidates/${id}/photo?h=${encodeURIComponent(handle)}`;
 }

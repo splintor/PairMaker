@@ -89,7 +89,10 @@ model Candidate {
   heightCm           Int?
   city               String?
   requirements       String?         @db.Text
+  // `photos` is the ordered list of blob handles; `photoUrl` mirrors photos[0]
+  // (the primary/avatar) so all existing single-photo code keeps working.
   photoUrl           String?
+  photos             String[]        @default([])
   details            Json            @default("{}")
   status             CandidateStatus @default(active)
   deactivationReason String?

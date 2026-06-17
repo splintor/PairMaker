@@ -69,11 +69,13 @@ function Input({ field, value }: { field: FieldDef; value: string }) {
 export function CandidateForm({
   action,
   values = {},
+  photos = [],
   submitLabel,
   cancelHref,
 }: {
   action: (formData: FormData) => void;
   values?: Values;
+  photos?: string[];
   submitLabel: string;
   cancelHref: string;
 }) {
@@ -132,8 +134,8 @@ export function CandidateForm({
   return (
     <form action={action} onSubmit={handleSubmit} className="space-y-6">
       <PhotoPicker
-        name="photoUrl"
-        defaultPhotoUrl={typeof values.photoUrl === "string" ? values.photoUrl : null}
+        name="photos"
+        defaultPhotos={photos}
         candidateId={typeof values.id === "string" ? values.id : undefined}
       />
       {groups.map((group) => (
