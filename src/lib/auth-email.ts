@@ -33,6 +33,14 @@ export function magicLinkEmail(url: string): { subject: string; text: string; ht
 }
 
 /** WhatsApp invitation text wrapping the same magic sign-in link. */
-export function magicLinkWhatsappMessage(url: string): string {
-  return `היי! הוזמנת ל-Pair Maker - מערכת לניהול מועמדים לשידוך.\nלהתחברות למערכת בלחיצה על הקישור:\n${url}`;
+export function magicLinkWhatsappMessage({
+  firstName,
+  communityName,
+  url,
+}: {
+  firstName: string;
+  communityName: string;
+  url: string;
+}): string {
+  return `הי ${firstName},\nאשמח שתצטרף אלינו ל-Pair Maker - מערכת לניהול מועמדים לשידוך ב${communityName}.\n\nהקישור להתחברות:\n${url}`;
 }

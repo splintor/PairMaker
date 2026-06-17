@@ -11,6 +11,7 @@ import { setFlash } from "@/lib/flash-server";
 import { signIn, captureMagicLink } from "@/lib/auth";
 import { whatsappHref } from "@/lib/phone";
 import { magicLinkWhatsappMessage } from "@/lib/auth-email";
+import { firstName } from "@/lib/candidate-display";
 
 function parseRole(v: FormDataEntryValue | null): Role {
   return String(v) === "admin" ? "admin" : "member";
@@ -265,11 +266,15 @@ export async function whatsappInviteHref(membershipId: string): Promise<Whatsapp
   if (!m.user.email) return { ok: false, error: "לשדכן/ית אין כתובת אימייל" };
 
   const email = m.user.email.toLowerCase();
+  const communityName =
+    ctx.memberships.find((c) => c.communityId === ctx.communityId)?.communityName ?? "";
+  const memberFirstName = firstName(m.user.name ?? "");
   try {
     const capture = captureMagicLink(email);
     await signIn("nodemailer", { email, redirect: false });
     const url = await capture;
-    return { ok: true, href: whatsappHref(m.user.phone, magicLinkWhatsappMessage(url)) };
+    const message = magicLinkWhatsappMessage({ firstName: memberFirstName, communityName, url });
+    return { ok: true, href: whatsappHref(m.user.phone, message) };
   } catch {
     return { ok: false, error: "יצירת ההזמנה נכשלה" };
   }
