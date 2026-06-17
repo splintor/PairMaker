@@ -73,14 +73,15 @@ export function MemberActionsMenu({
 
       {open && (
         <div className="absolute end-0 z-30 mt-1 w-52 overflow-hidden rounded-xl2 border border-brand-200 bg-white py-1 shadow-lg">
-          {hasEmail && (
+          {/* No point inviting someone who's blocked from the app. */}
+          {!blocked && hasEmail && (
             <form action={sendInvitation.bind(null, membershipId)}>
               <button type="submit" className={`${itemCls} text-slate-700`}>
                 שליחת הזמנה במייל
               </button>
             </form>
           )}
-          {hasPhone && hasEmail && (
+          {!blocked && hasPhone && hasEmail && (
             <button type="button" onClick={onWhatsapp} disabled={busy} className={`${itemCls} text-emerald-700`}>
               {busy ? "מכין הזמנה…" : "שליחת הזמנה בוואטסאפ"}
             </button>
