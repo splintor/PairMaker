@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FIELDS, GENDER_OPTIONS, type FieldDef } from "@/lib/fields";
 import { smokingLabel, requirementsLabel, relationLabel, familyStatusLabel } from "@/lib/candidate-display";
 import { LinkButton } from "@/components/ui";
@@ -82,7 +82,20 @@ export function CandidateForm({
   const [gender, setGender] = useState(values.gender == null ? "" : String(values.gender));
   const [familyStatus, setFamilyStatus] = useState(values.familyStatus == null ? "single" : String(values.familyStatus));
   const [genderError, setGenderError] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const stickyAnchorRef = useRef<HTMLDivElement>(null);
   const groups = [...new Set(FIELDS.map((f) => f.group ?? "כללי"))];
+
+  // Reveal the mobile sticky action bar only once the photo picker has scrolled
+  // up to the top of the screen, so it doesn't cover the form while you're at the top.
+  useEffect(() => {
+    const el = stickyAnchorRef.current;
+    if (!el) return;
+    const onScroll = () => setShowStickyBar(el.getBoundingClientRect().top <= 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function control(field: FieldDef, value: string) {
     if (field.key === "gender") {
@@ -132,12 +145,27 @@ export function CandidateForm({
   }
 
   return (
-    <form action={action} onSubmit={handleSubmit} className="space-y-6">
-      <PhotoPicker
-        name="photos"
-        defaultPhotos={photos}
-        candidateId={typeof values.id === "string" ? values.id : undefined}
-      />
+    <form action={action} onSubmit={handleSubmit}>
+      {/* Mobile-only action bar; slides in once the photo picker scrolls off the top.
+          Kept outside the space-y wrapper so it never picks up a sibling margin
+          (a margin would offset this fixed bar and let it peek when hidden). */}
+      <div
+        className={`fixed inset-x-0 top-0 z-30 flex gap-3 border-b border-brand-200 bg-brand-50/95 px-4 py-3 backdrop-blur transition-transform duration-200 sm:hidden ${
+          showStickyBar ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <PendingButton>{submitLabel}</PendingButton>
+        <LinkButton href={cancelHref}>ביטול</LinkButton>
+      </div>
+      <div className="space-y-6">
+      <div>
+        <div ref={stickyAnchorRef} aria-hidden className="h-0" />
+        <PhotoPicker
+          name="photos"
+          defaultPhotos={photos}
+          candidateId={typeof values.id === "string" ? values.id : undefined}
+        />
+      </div>
       {groups.map((group) => (
         <fieldset key={group} className="rounded-xl2 border border-brand-200 bg-white p-5">
           <legend className="px-2 text-sm font-bold text-brand-700">{group}</legend>
@@ -185,6 +213,7 @@ export function CandidateForm({
       <div className="flex gap-3">
         <PendingButton>{submitLabel}</PendingButton>
         <LinkButton href={cancelHref}>ביטול</LinkButton>
+      </div>
       </div>
     </form>
   );
