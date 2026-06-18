@@ -9,7 +9,7 @@ import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
 import { StatusPill, Card, LinkButton } from "@/components/ui";
 import { EmptyState } from "@/components/EmptyState";
-import { CandidateAvatar } from "@/components/CandidateAvatar";
+import { EnlargeableAvatar } from "@/components/EnlargeableAvatar";
 import { DeactivateDialog } from "@/components/DeactivateDialog";
 import { DeleteCandidateButton } from "@/components/DeleteCandidateButton";
 import { SuggestionItem } from "@/components/SuggestionItem";
@@ -82,7 +82,7 @@ export default async function CandidateProfile({
       <Card>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <div className="flex flex-1 items-start gap-4">
-            <CandidateAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} size="lg" />
+            <EnlargeableAvatar id={c.id} name={c.name} photoUrl={c.photoUrl} photos={c.photos} />
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <h1 className="text-xl font-extrabold text-brand-700">{c.name}</h1>
