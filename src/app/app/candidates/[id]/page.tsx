@@ -146,7 +146,7 @@ export default async function CandidateProfile({
                 <button className="text-sm text-emerald-700 hover:underline">החזרה לפעילות</button>
               </form>
             ))}
-          {canEdit && <DeleteCandidateButton action={deleteAction} />}
+          {canEdit && <DeleteCandidateButton action={deleteAction} name={c.name} gender={c.gender} />}
         </div>
       </Card>
 

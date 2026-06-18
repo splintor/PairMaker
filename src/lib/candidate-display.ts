@@ -82,3 +82,8 @@ export function creatorLabel(
 export function addedByLabel(gender: "male" | "female" | null | undefined): string {
   return gender === "female" ? "נוספה ע״י" : "נוסף ע״י";
 }
+
+/** Gendered "candidate" noun: מועמד (male) / מועמדת (female) / מועמד/ת fallback. */
+export function candidateNoun(gender: "male" | "female" | null | undefined): string {
+  return gender === "female" ? "מועמדת" : gender === "male" ? "מועמד" : "מועמד/ת";
+}
