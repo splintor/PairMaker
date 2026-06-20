@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { candidatePhotoSrcByHandle } from "@/lib/photo";
 
 /**
@@ -17,6 +18,16 @@ export function PhotoLightbox({
   index: number | null;
   onChange: (i: number | null) => void;
 }) {
+  // Close on Esc while the viewer is open.
+  useEffect(() => {
+    if (index === null) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onChange(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [index, onChange]);
+
   if (index === null || photos.length === 0) return null;
 
   const src = (h: string) => candidatePhotoSrcByHandle(candidateId, h);

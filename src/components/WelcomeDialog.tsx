@@ -62,7 +62,7 @@ export function WelcomeDialog() {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2 border-b border-brand-100 p-5">
-          <h2 className="text-lg font-bold text-brand-700">חברים יקרים,</h2>
+          <h2 className="text-lg font-bold text-brand-700">חברות יקרות וחברים יקרים,</h2>
           <button
             type="button"
             onClick={close}
