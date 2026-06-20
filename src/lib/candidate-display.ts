@@ -1,3 +1,5 @@
+import { getField, optionLabel } from "@/lib/fields";
+
 /** Gendered age phrase: "בן 30" for a male, "בת 27" for a female. null when no age. */
 export function ageLabel(gender: "male" | "female", age: number | null): string | null {
   if (age == null) return null;
@@ -56,6 +58,17 @@ export function familyStatusLabel(value: string, gender: "male" | "female" | nul
   const w = FAMILY_STATUS_WORDS[value];
   if (!w) return value;
   return gender === "male" ? w.male : gender === "female" ? w.female : w.neutral;
+}
+
+/**
+ * Gendered education label. Only "student" is gendered (סטודנט/סטודנטית);
+ * the other options are gender-neutral, so they fall back to the registry label.
+ */
+export function educationLabel(value: string, gender: "male" | "female" | null | undefined): string {
+  if (value === "student") {
+    return gender === "male" ? "סטודנט" : gender === "female" ? "סטודנטית" : "סטודנט/ית";
+  }
+  return optionLabel(getField("education")!, value);
 }
 
 /** Gendered "how is this person related to me?" field label. */

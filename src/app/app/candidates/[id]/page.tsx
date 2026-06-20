@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/community";
 import { db } from "@/lib/db";
 import { FIELDS, optionLabel, getField } from "@/lib/fields";
-import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel, requirementsLabel, familyStatusLabel, relationLabel } from "@/lib/candidate-display";
+import { displayAge, ageLabel, ageWithBirthYear, statusLabel, creatorLabel, addedByLabel, requirementsLabel, familyStatusLabel, educationLabel, relationLabel } from "@/lib/candidate-display";
 import { canEditCandidate } from "@/lib/permissions";
 import { oppositeGender } from "@/lib/suggestions";
 import { deactivationReasonLabel } from "@/lib/constants";
@@ -71,6 +71,7 @@ export default async function CandidateProfile({
     if (field.type === "boolean") return raw == null ? "—" : raw ? "כן" : "לא";
     if (raw == null || raw === "") return "—";
     if (key === "familyStatus") return familyStatusLabel(String(raw), c!.gender);
+    if (key === "education") return educationLabel(String(raw), c!.gender);
     if (field.options) return optionLabel(field, String(raw));
     return String(raw);
   }

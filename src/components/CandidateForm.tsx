@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FIELDS, GENDER_OPTIONS, type FieldDef } from "@/lib/fields";
-import { smokingLabel, requirementsLabel, relationLabel, familyStatusLabel } from "@/lib/candidate-display";
+import { FIELDS, GENDER_OPTIONS, getField, type FieldDef } from "@/lib/fields";
+import { smokingLabel, requirementsLabel, relationLabel, familyStatusLabel, educationLabel } from "@/lib/candidate-display";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -33,6 +33,12 @@ function smokingOptions(gender: string): ToggleOption[] {
 function familyStatusOptions(gender: string): SelectOption[] {
   const g = asGender(gender);
   return ["single", "divorced", "widowed"].map((value) => ({ value, label: familyStatusLabel(value, g) }));
+}
+
+/** Education options with the gendered "student" label (slash form until gender is chosen). */
+function educationOptions(gender: string): SelectOption[] {
+  const g = asGender(gender);
+  return (getField("education")!.options ?? []).map(({ value }) => ({ value, label: educationLabel(value, g) }));
 }
 
 function Input({ field, value }: { field: FieldDef; value: string }) {
@@ -124,6 +130,9 @@ export function CandidateForm({
           onChange={setFamilyStatus}
         />
       );
+    }
+    if (field.key === "education") {
+      return <Select name={field.key} options={educationOptions(gender)} defaultValue={value} />;
     }
     if (field.key === "smoking" && field.widget === "toggle") {
       return <SegmentedToggle name={field.key} options={smokingOptions(gender)} defaultValue={value || "false"} />;

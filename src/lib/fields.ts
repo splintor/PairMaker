@@ -61,9 +61,12 @@ export const FIELDS: FieldDef[] = [
     label: "השכלה",
     type: "select",
     storage: "details",
+    // "student" renders gender-matched in the form/profile via educationLabel();
+    // the slash-form label here is the fallback (search panel / unknown gender).
     options: [
       { value: "highschool", label: "תיכונית" },
       { value: "yeshiva", label: "ישיבה / מדרשה" },
+      { value: "student", label: "סטודנט/ית" },
       { value: "bachelor", label: "תואר ראשון" },
       { value: "graduate", label: "תואר מתקדם" },
     ],
