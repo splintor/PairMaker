@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { setMemberPhone } from "@/app/app/settings/actions";
+import { normalizePhone } from "@/lib/phone";
 
 const SAVE_DELAY_MS = 1200;
 
@@ -48,7 +49,9 @@ export function MemberPhoneField({
 
   function flush() {
     if (timer.current) clearTimeout(timer.current);
-    void save(value);
+    const normalized = normalizePhone(value);
+    if (normalized !== value) setValue(normalized);
+    void save(normalized);
   }
 
   return (

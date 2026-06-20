@@ -1,5 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { telHref, whatsappNumber, whatsappHref } from "./phone";
+import { normalizePhone, telHref, whatsappNumber, whatsappHref } from "./phone";
+
+describe("normalizePhone", () => {
+  it("converts an Israeli international number to local form", () => {
+    expect(normalizePhone("+972 52-537-4917")).toBe("0525374917");
+    expect(normalizePhone("00972 52-537-4917")).toBe("0525374917");
+    expect(normalizePhone("972525374917")).toBe("0525374917");
+  });
+  it("strips separators from a local number", () => {
+    expect(normalizePhone("050-657-5335")).toBe("0506575335");
+    expect(normalizePhone("050 657 5335")).toBe("0506575335");
+  });
+  it("leaves an already-normalized number unchanged", () => {
+    expect(normalizePhone("0525374917")).toBe("0525374917");
+  });
+  it("leaves other-country numbers untouched", () => {
+    expect(normalizePhone("+1 415-555-2671")).toBe("+1 415-555-2671");
+    expect(normalizePhone("+44 20 7946 0958")).toBe("+44 20 7946 0958");
+  });
+  it("leaves blank/unrecognized input alone", () => {
+    expect(normalizePhone("")).toBe("");
+    expect(normalizePhone("  ")).toBe("");
+  });
+});
 
 describe("telHref", () => {
   it("strips formatting, keeps a leading +", () => {

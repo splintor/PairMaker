@@ -6,6 +6,7 @@ import { smokingLabel, requirementsLabel, requirementsPlaceholder, relationLabel
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { normalizePhone } from "@/lib/phone";
 import { Select, type SelectOption } from "@/components/Select";
 import { SegmentedToggle, type ToggleOption } from "@/components/SegmentedToggle";
 
@@ -67,6 +68,13 @@ function Input({ field, value, placeholder }: { field: FieldDef; value: string; 
       type={field.type === "number" ? "number" : "text"}
       defaultValue={value}
       required={field.required}
+      onBlur={
+        field.key === "phone"
+          ? (e) => {
+              e.target.value = normalizePhone(e.target.value);
+            }
+          : undefined
+      }
       className={base}
     />
   );
