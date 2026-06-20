@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { requireMembership } from "@/lib/community";
 import { can } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
+import { deleteCommunityLogo } from "@/lib/blob";
 import { setFlash } from "@/lib/flash-server";
 import { signIn, captureMagicLink } from "@/lib/auth";
 import { whatsappHref } from "@/lib/phone";
@@ -46,6 +47,37 @@ export async function renameCommunity(formData: FormData) {
   revalidatePath("/app/settings");
   await setFlash({ type: "success", message: "שם הקהילה עודכן" });
   redirect("/app/settings");
+}
+
+/** Set or clear the community logo. Pass a fresh blob handle, or null to remove it. */
+export async function setCommunityLogo(handle: string | null) {
+  const ctx = await requireMembership();
+  if (!can(ctx.role, "member:manage")) throw new Error("forbidden");
+
+  const existing = await db.community.findUnique({ where: { id: ctx.communityId } });
+  if (!existing) redirect("/app/settings");
+
+  const next = handle && handle.trim() ? handle.trim() : null;
+  if (existing.logoUrl === next) return;
+
+  await db.$transaction(async (tx) => {
+    await tx.community.update({ where: { id: ctx.communityId }, data: { logoUrl: next } });
+    await writeAudit(tx, {
+      communityId: ctx.communityId,
+      entityType: "community",
+      entityId: ctx.communityId,
+      entityLabel: existing.name,
+      action: "update",
+      actorId: ctx.userId,
+      changes: { logo: { from: existing.logoUrl ? "✓" : "—", to: next ? "✓" : "—" } },
+    });
+  });
+
+  // Replaced or removed: best-effort cleanup of the now-orphaned blob.
+  if (existing.logoUrl && existing.logoUrl !== next) await deleteCommunityLogo(existing.logoUrl);
+
+  revalidatePath("/app/settings");
+  revalidatePath("/app", "layout"); // refresh the top-bar logo everywhere
 }
 
 export async function addMember(formData: FormData) {

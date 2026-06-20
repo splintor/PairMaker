@@ -33,3 +33,21 @@ export async function deleteCandidatePhoto(pathname: string): Promise<void> {
     /* don't block the mutation on cleanup failure */
   }
 }
+
+/** Store a community logo privately; returns the blob pathname to persist in logoUrl. */
+export async function storeCommunityLogo(
+  body: ArrayBuffer,
+  ext: string,
+  contentType: string,
+): Promise<string> {
+  const { pathname } = await put(`communities/${crypto.randomUUID()}.${ext}`, body, {
+    access: "private",
+    contentType,
+    token,
+  });
+  return pathname;
+}
+
+// Reading/deleting a logo is identical to a photo (a private blob keyed by pathname).
+export const readCommunityLogo = readCandidatePhoto;
+export const deleteCommunityLogo = deleteCandidatePhoto;

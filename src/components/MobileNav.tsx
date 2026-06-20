@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { NavLink } from "./NavLink";
 import { CommunitySwitcher } from "./CommunitySwitcher";
+import { BrandMark } from "./BrandMark";
 import type { ActiveContext } from "@/lib/community";
 
 export function MobileNav({
@@ -78,7 +78,7 @@ export function MobileNav({
             className="fixed inset-y-0 right-0 z-50 flex w-72 max-w-[80%] flex-col gap-4 bg-white p-5 shadow-xl outline-none"
           >
             <div className="flex items-center justify-between">
-              <Link href="/" onClick={() => setOpen(false)} className="text-lg font-extrabold text-brand-700">💞 PairMaker</Link>
+              <BrandMark communityId={ctx.communityId} logoUrl={ctx.communityLogoUrl} onClick={() => setOpen(false)} />
               <button
                 type="button"
                 aria-label="סגירה"

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { signOut } from "@/lib/auth";
 import { NavLink } from "./NavLink";
 import { CommunitySwitcher } from "./CommunitySwitcher";
 import { MobileNav } from "./MobileNav";
+import { BrandMark } from "./BrandMark";
 import type { ActiveContext } from "@/lib/community";
 
 export function TopNav({ ctx }: { ctx: ActiveContext }) {
@@ -14,7 +14,7 @@ export function TopNav({ ctx }: { ctx: ActiveContext }) {
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
       <div className="flex items-center gap-5">
-        <Link href="/" className="text-lg font-extrabold text-brand-700">💞 PairMaker</Link>
+        <BrandMark communityId={ctx.communityId} logoUrl={ctx.communityLogoUrl} />
         <nav className="hidden items-center gap-5 text-sm md:flex" aria-label="ראשי">
           <NavLink href="/app/candidates">מועמדים</NavLink>
           <NavLink href="/app/matches">שידוכים</NavLink>

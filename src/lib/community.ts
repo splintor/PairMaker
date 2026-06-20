@@ -16,6 +16,7 @@ export type ActiveContext = {
   userName: string | null;
   userEmail: string | null;
   communityId: string;
+  communityLogoUrl: string | null;
   role: Role;
   memberships: { communityId: string; communityName: string; role: Role }[];
 };
@@ -52,6 +53,7 @@ export async function requireMembership(): Promise<ActiveContext> {
     userName: rows[0].user.name ?? null,
     userEmail: rows[0].user.email ?? null,
     communityId,
+    communityLogoUrl: active.community.logoUrl ?? null,
     role: active.role,
     memberships: rows.map((r) => ({
       communityId: r.communityId,

@@ -36,3 +36,8 @@ export function candidatePhotoSrc(id: string, photoUrl: string): string {
 export function candidatePhotoSrcByHandle(id: string, handle: string): string {
   return `/api/candidates/${id}/photo?h=${encodeURIComponent(handle)}`;
 }
+
+/** Cache-busting URL for a community's logo (the `v` token changes when the logo does). */
+export function communityLogoSrc(communityId: string, logoUrl: string): string {
+  return `/api/communities/${communityId}/logo?v=${encodeURIComponent(logoUrl)}`;
+}

@@ -56,6 +56,7 @@ model User {
 model Community {
   id          String       @id @default(cuid())
   name        String
+  logoUrl     String? // private blob pathname of the community logo (shown in the top bar)
   // WhatsApp config is added in Phase 2.
   memberships Membership[]
   candidates  Candidate[]

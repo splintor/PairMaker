@@ -7,6 +7,7 @@ import { MemberPhoneField } from "@/components/MemberPhoneField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
 import { MemberActionsMenu } from "@/components/MemberActionsMenu";
 import { RoleToggle } from "@/components/RoleToggle";
+import { CommunityLogoField } from "@/components/CommunityLogoField";
 import { addMember, renameCommunity } from "./actions";
 
 export default async function SettingsPage() {
@@ -37,6 +38,8 @@ export default async function SettingsPage() {
         </label>
         <PendingButton>שמירה</PendingButton>
       </form>
+
+      <CommunityLogoField communityId={ctx.communityId} defaultLogoUrl={community?.logoUrl ?? null} />
 
       <h2 className="text-lg font-bold text-brand-700">שדכני הקהילה</h2>
 
