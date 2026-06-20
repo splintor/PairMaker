@@ -106,6 +106,7 @@ export default async function SuggestPage({
                     <SendToMemberButton
                       memberId={creator.id}
                       sourceCandidateId={id}
+                      targetCandidateId={m.id}
                       creatorName={creatorLabel(creator)}
                       creatorPhone={creator.phone!}
                       theirCandidate={m.name}

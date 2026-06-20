@@ -14,6 +14,7 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 export function SendToMemberButton({
   memberId,
   sourceCandidateId,
+  targetCandidateId,
   creatorName,
   creatorPhone,
   theirCandidate,
@@ -22,6 +23,7 @@ export function SendToMemberButton({
 }: {
   memberId: string;
   sourceCandidateId: string;
+  targetCandidateId: string;
   creatorName: string;
   creatorPhone: string;
   theirCandidate: string;
@@ -35,7 +37,7 @@ export function SendToMemberButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => {
-        void logMemberContact(memberId, sourceCandidateId);
+        void logMemberContact(memberId, sourceCandidateId, targetCandidateId);
       }}
       className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
     >

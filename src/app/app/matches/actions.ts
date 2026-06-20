@@ -135,6 +135,8 @@ export async function logIntroContact(suggestionId: string, recipientId: string)
     action: "contact",
     actorId: ctx.userId,
     note: `הצעת היכרות עם ${intro.name}`,
+    // The match this message was about, so the feed can link both candidates.
+    snapshot: { about: { id: intro.id, name: intro.name } },
   });
   revalidatePath("/app/activity");
 }
@@ -143,16 +145,22 @@ export async function logIntroContact(suggestionId: string, recipientId: string)
  * Log that a member was messaged (WhatsApp) about one of their candidates from
  * the suggest page. Fire-and-forget; no-ops if the member can't be resolved.
  */
-export async function logMemberContact(memberId: string, sourceCandidateId: string) {
+export async function logMemberContact(
+  memberId: string,
+  sourceCandidateId: string,
+  targetCandidateId: string,
+) {
   const ctx = await requireMembership();
   const membership = await db.membership.findFirst({
     where: { communityId: ctx.communityId, userId: memberId },
     include: { user: true },
   });
   if (!membership) return;
-  const source = await db.candidate.findFirst({
-    where: { id: sourceCandidateId, communityId: ctx.communityId },
-  });
+  const [source, target] = await Promise.all([
+    db.candidate.findFirst({ where: { id: sourceCandidateId, communityId: ctx.communityId } }),
+    db.candidate.findFirst({ where: { id: targetCandidateId, communityId: ctx.communityId } }),
+  ]);
+  if (!source || !target) return;
 
   await writeAudit(db, {
     communityId: ctx.communityId,
@@ -161,7 +169,12 @@ export async function logMemberContact(memberId: string, sourceCandidateId: stri
     entityLabel: membership.user.name ?? membership.user.email ?? "—",
     action: "contact",
     actorId: ctx.userId,
-    note: source ? `בנוגע ל${source.name}` : undefined,
+    note: `הצעת שידוך בין ${source.name} ל${target.name}`,
+    // Both candidates the member was pitched, so the feed can link them.
+    snapshot: {
+      source: { id: source.id, name: source.name },
+      target: { id: target.id, name: target.name },
+    },
   });
   revalidatePath("/app/activity");
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditSentence, auditHref, describeAudit } from "./audit-format";
+import { auditSentence, auditHref, describeAudit, describeAuditSegments } from "./audit-format";
 
 describe("auditSentence", () => {
   it("candidate actions", () => {
@@ -43,11 +43,39 @@ describe("auditSentence", () => {
     expect(s).toContain("מועמד/ת");
     expect(s).toContain("נוסף/ה");
   });
-  it("contact actions", () => {
+  it("contact actions fall back to a single-name sentence without related data", () => {
     expect(auditSentence({ entityType: "candidate", action: "contact", entityLabel: "דנה" })).toContain("נשלחה הודעת היכרות ל");
     expect(auditSentence({ entityType: "candidate", action: "contact", entityLabel: "דנה" })).toContain("דנה");
     expect(auditSentence({ entityType: "membership", action: "contact", entityLabel: "יוסי" })).toContain("נשלחה הודעה לשדכן/ית");
     expect(auditSentence({ entityType: "membership", action: "contact", entityLabel: "יוסי" })).toContain("יוסי");
+  });
+  it("intro contact mentions and links both candidates (to A about B)", () => {
+    const view = {
+      entityType: "candidate",
+      action: "contact",
+      entityLabel: "דנה",
+      entityId: "a1",
+      contact: { about: { id: "b1", name: "יוסי" } },
+    };
+    expect(auditSentence(view)).toBe("נשלחה הודעה לדנה בנוגע ליוסי");
+    const segs = describeAuditSegments(view);
+    expect(segs.find((s) => s.text === "דנה")?.href).toBe("/app/candidates/a1");
+    expect(segs.find((s) => s.text === "יוסי")?.href).toBe("/app/candidates/b1");
+  });
+  it("member-pitch contact mentions C and links A and B (to C to match A to B)", () => {
+    const view = {
+      entityType: "membership",
+      action: "contact",
+      entityLabel: "משה",
+      entityId: "u1",
+      contact: { source: { id: "a1", name: "דנה" }, target: { id: "b1", name: "יוסי" } },
+    };
+    expect(auditSentence(view)).toBe("נשלחה הודעה למשה להצעת שידוך בין דנה ליוסי");
+    const segs = describeAuditSegments(view);
+    expect(segs.find((s) => s.text === "דנה")?.href).toBe("/app/candidates/a1");
+    expect(segs.find((s) => s.text === "יוסי")?.href).toBe("/app/candidates/b1");
+    // The member (C) is named in plain text, not linked.
+    expect(segs.some((s) => s.text.includes("משה") && !s.href)).toBe(true);
   });
   it("login action", () => {
     expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("התחברות");

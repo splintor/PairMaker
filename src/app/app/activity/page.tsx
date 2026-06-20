@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireCapability } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { describeAudit, auditHref } from "@/lib/audit-format";
+import { describeAuditSegments, type AuditView } from "@/lib/audit-format";
 import { relativeTimeHe } from "@/lib/relative-time";
 import { ActivityFilters } from "@/components/ActivityFilters";
 import { ReloadButton } from "@/components/ReloadButton";
@@ -56,6 +56,23 @@ export default async function ActivityPage({
     return null;
   }
 
+  // Extra parties for "contact" entries (stored in the snapshot), so the feed
+  // can link every candidate involved in the message.
+  function contactFor(l: (typeof logs)[number]): AuditView["contact"] | undefined {
+    if (l.action !== "contact") return undefined;
+    const snap = l.snapshot as {
+      about?: { id: string; name: string };
+      source?: { id: string; name: string };
+      target?: { id: string; name: string };
+    } | null;
+    if (!snap) return undefined;
+    if (l.entityType === "candidate" && snap.about) return { about: snap.about };
+    if (l.entityType === "membership" && snap.source && snap.target) {
+      return { source: snap.source, target: snap.target };
+    }
+    return undefined;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -82,21 +99,20 @@ export default async function ActivityPage({
         <ul className="space-y-2">
         {logs.map((l) => {
           const changes = (l.changes as Record<string, { from: unknown; to: unknown }> | null) ?? null;
-          const parts = describeAudit({ ...l, gender: genderFor(l) });
-          const href = auditHref(l);
+          const segments = describeAuditSegments({ ...l, gender: genderFor(l), contact: contactFor(l) });
           return (
             <li key={l.id} className="rounded-xl2 border border-brand-200 bg-white p-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-slate-800">
-                  {parts.before}
-                  {href ? (
-                    <Link href={href} className="font-medium text-brand-700 hover:underline">
-                      {parts.label}
-                    </Link>
-                  ) : (
-                    parts.label
+                  {segments.map((seg, i) =>
+                    seg.href ? (
+                      <Link key={i} href={seg.href} className="font-medium text-brand-700 hover:underline">
+                        {seg.text}
+                      </Link>
+                    ) : (
+                      <span key={i}>{seg.text}</span>
+                    ),
                   )}
-                  {parts.after}
                 </span>
                 <span className="shrink-0 cursor-default text-xs text-slate-400" title={fmtTime(l.createdAt)}>
                   {relativeTimeHe(l.createdAt)}

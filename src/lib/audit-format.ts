@@ -2,12 +2,60 @@ export type AuditView = {
   entityType: string;
   action: string;
   entityLabel: string;
+  entityId?: string;
   /** Candidate gender, when known — lets candidate entries render the correct grammatical form. */
   gender?: "male" | "female" | null;
+  /** Extra parties for "contact" entries, so the sentence can link every candidate involved. */
+  contact?: {
+    /** intro message: sent to the entity candidate ABOUT this candidate. */
+    about?: { id: string; name: string };
+    /** member pitch: sent to the entity member to match `source` with `target`. */
+    source?: { id: string; name: string };
+    target?: { id: string; name: string };
+  };
 };
 
 /** A sentence split so the entity name (`label`) can be rendered as a link. */
 export type AuditParts = { before: string; label: string; after: string };
+
+/** A renderable sentence fragment; `href` (when set) makes it a link. */
+export type AuditSegment = { text: string; href?: string };
+
+const candidateHref = (id: string) => `/app/candidates/${id}`;
+
+/**
+ * The activity sentence as ordered segments, so entries can link more than one
+ * entity (e.g. a "contact" entry links every candidate involved). Non-contact
+ * entries reuse describeAudit + auditHref (a single optional link).
+ */
+export function describeAuditSegments(e: AuditView): AuditSegment[] {
+  if (e.action === "contact") {
+    // Intro: "נשלחה הודעה ל<A> בנוגע ל<B>" — A is the recipient, B the suggested match.
+    if (e.entityType === "candidate" && e.entityId && e.contact?.about) {
+      return [
+        { text: "נשלחה הודעה ל" },
+        { text: e.entityLabel, href: candidateHref(e.entityId) },
+        { text: " בנוגע ל" },
+        { text: e.contact.about.name, href: candidateHref(e.contact.about.id) },
+      ];
+    }
+    // Member pitch: "נשלחה הודעה ל<C> להצעת שידוך בין <A> ל<B>".
+    if (e.entityType === "membership" && e.contact?.source && e.contact?.target) {
+      return [
+        { text: `נשלחה הודעה ל${e.entityLabel} להצעת שידוך בין ` },
+        { text: e.contact.source.name, href: candidateHref(e.contact.source.id) },
+        { text: " ל" },
+        { text: e.contact.target.name, href: candidateHref(e.contact.target.id) },
+      ];
+    }
+  }
+  // Default: single-label sentence with an optional link on the label.
+  const p = describeAudit(e);
+  const href = e.entityId
+    ? auditHref({ entityType: e.entityType, entityId: e.entityId, action: e.action })
+    : null;
+  return [{ text: p.before }, { text: p.label, ...(href ? { href } : {}) }, { text: p.after }];
+}
 
 export function describeAudit(e: AuditView): AuditParts {
   const name = e.entityLabel;
@@ -59,8 +107,9 @@ export function describeAudit(e: AuditView): AuditParts {
 
 /** The full sentence as plain text (e.g. for non-linked contexts / tests). */
 export function auditSentence(e: AuditView): string {
-  const p = describeAudit(e);
-  return `${p.before}${p.label}${p.after}`;
+  return describeAuditSegments(e)
+    .map((s) => s.text)
+    .join("");
 }
 
 /** Link target for the entity name, or null when it shouldn't link (deletes, members, community). */
