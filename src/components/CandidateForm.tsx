@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FIELDS, GENDER_OPTIONS, getField, type FieldDef } from "@/lib/fields";
-import { smokingLabel, requirementsLabel, relationLabel, familyStatusLabel, educationLabel } from "@/lib/candidate-display";
+import { smokingLabel, requirementsLabel, requirementsPlaceholder, relationLabel, familyStatusLabel, educationLabel } from "@/lib/candidate-display";
 import { LinkButton } from "@/components/ui";
 import { PendingButton } from "@/components/PendingButton";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -41,10 +41,10 @@ function educationOptions(gender: string): SelectOption[] {
   return (getField("education")!.options ?? []).map(({ value }) => ({ value, label: educationLabel(value, g) }));
 }
 
-function Input({ field, value }: { field: FieldDef; value: string }) {
+function Input({ field, value, placeholder }: { field: FieldDef; value: string; placeholder?: string }) {
   const base = "w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start";
   if (field.type === "longtext") {
-    return <textarea name={field.key} dir="rtl" defaultValue={value} rows={3} className={base} />;
+    return <textarea name={field.key} dir="rtl" defaultValue={value} placeholder={placeholder} rows={3} className={base} />;
   }
   if (field.type === "boolean") {
     return (
@@ -133,6 +133,9 @@ export function CandidateForm({
     }
     if (field.key === "education") {
       return <Select name={field.key} options={educationOptions(gender)} defaultValue={value} />;
+    }
+    if (field.key === "requirements") {
+      return <Input field={field} value={value} placeholder={requirementsPlaceholder(asGender(gender))} />;
     }
     if (field.key === "smoking" && field.widget === "toggle") {
       return <SegmentedToggle name={field.key} options={smokingOptions(gender)} defaultValue={value || "false"} />;

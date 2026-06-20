@@ -47,6 +47,12 @@ export function requirementsLabel(gender: "male" | "female" | null | undefined):
   return "דרישות מבן/בת הזוג";
 }
 
+/** Gendered placeholder for the requirements textarea (partner is the opposite gender). */
+export function requirementsPlaceholder(gender: "male" | "female" | null | undefined): string {
+  const partner = gender === "male" ? "בת הזוג" : gender === "female" ? "בן הזוג" : "בן/בת הזוג";
+  return `קצת על עצמי ועל הציפיות שלי מ${partner}`;
+}
+
 const FAMILY_STATUS_WORDS: Record<string, { male: string; female: string; neutral: string }> = {
   single: { male: "רווק", female: "רווקה", neutral: "רווק/ה" },
   divorced: { male: "גרוש", female: "גרושה", neutral: "גרוש/ה" },
