@@ -104,6 +104,8 @@ export default async function SuggestPage({
                 <div className="flex items-center gap-2">
                   {showSendToMember && (
                     <SendToMemberButton
+                      memberId={creator.id}
+                      sourceCandidateId={id}
                       creatorName={creatorLabel(creator)}
                       creatorPhone={creator.phone!}
                       theirCandidate={m.name}

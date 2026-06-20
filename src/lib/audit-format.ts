@@ -12,6 +12,8 @@ export type AuditParts = { before: string; label: string; after: string };
 export function describeAudit(e: AuditView): AuditParts {
   const name = e.entityLabel;
   if (e.entityType === "candidate") {
+    // A WhatsApp intro message was sent to this candidate.
+    if (e.action === "contact") return { before: "נשלחה הודעת היכרות ל", label: name, after: "" };
     // [male, female, bi-gender fallback] for each action's verb.
     const verbs: Record<string, [string, string, string]> = {
       create: ["נוסף", "נוספה", "נוסף/ה"],
@@ -36,6 +38,8 @@ export function describeAudit(e: AuditView): AuditParts {
     if (prefix[e.action]) return { before: prefix[e.action], label: name, after: "" };
   }
   if (e.entityType === "membership") {
+    // A WhatsApp message was sent to this member about a possible match.
+    if (e.action === "contact") return { before: "נשלחה הודעה לשדכן/ית ", label: name, after: "" };
     const prefix: Record<string, string> = {
       create: "שדכן/ית נוסף/ה: ",
       update: "תפקיד עודכן: ",

@@ -43,6 +43,12 @@ describe("auditSentence", () => {
     expect(s).toContain("מועמד/ת");
     expect(s).toContain("נוסף/ה");
   });
+  it("contact actions", () => {
+    expect(auditSentence({ entityType: "candidate", action: "contact", entityLabel: "דנה" })).toContain("נשלחה הודעת היכרות ל");
+    expect(auditSentence({ entityType: "candidate", action: "contact", entityLabel: "דנה" })).toContain("דנה");
+    expect(auditSentence({ entityType: "membership", action: "contact", entityLabel: "יוסי" })).toContain("נשלחה הודעה לשדכן/ית");
+    expect(auditSentence({ entityType: "membership", action: "contact", entityLabel: "יוסי" })).toContain("יוסי");
+  });
   it("login action", () => {
     expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("התחברות");
     expect(auditSentence({ entityType: "auth", action: "login", entityLabel: "יוסי" })).toContain("יוסי");

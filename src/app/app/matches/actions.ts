@@ -110,6 +110,62 @@ export async function updateSuggestion(id: string, formData: FormData) {
   revalidatePath("/app/matches");
 }
 
+/**
+ * Log that a candidate was contacted (WhatsApp intro) from a suggestion, so the
+ * activity feed shows the feature being used. Fire-and-forget from the client;
+ * silently no-ops if the suggestion/recipient can't be resolved.
+ */
+export async function logIntroContact(suggestionId: string, recipientId: string) {
+  const ctx = await requireMembership();
+  const s = await db.suggestion.findFirst({
+    where: { id: suggestionId, communityId: ctx.communityId },
+    include: { candidateA: true, candidateB: true },
+  });
+  if (!s) return;
+  const recipient =
+    s.candidateAId === recipientId ? s.candidateA : s.candidateBId === recipientId ? s.candidateB : null;
+  if (!recipient) return;
+  const intro = recipient.id === s.candidateAId ? s.candidateB : s.candidateA;
+
+  await writeAudit(db, {
+    communityId: ctx.communityId,
+    entityType: "candidate",
+    entityId: recipient.id,
+    entityLabel: recipient.name,
+    action: "contact",
+    actorId: ctx.userId,
+    note: `הצעת היכרות עם ${intro.name}`,
+  });
+  revalidatePath("/app/activity");
+}
+
+/**
+ * Log that a member was messaged (WhatsApp) about one of their candidates from
+ * the suggest page. Fire-and-forget; no-ops if the member can't be resolved.
+ */
+export async function logMemberContact(memberId: string, sourceCandidateId: string) {
+  const ctx = await requireMembership();
+  const membership = await db.membership.findFirst({
+    where: { communityId: ctx.communityId, userId: memberId },
+    include: { user: true },
+  });
+  if (!membership) return;
+  const source = await db.candidate.findFirst({
+    where: { id: sourceCandidateId, communityId: ctx.communityId },
+  });
+
+  await writeAudit(db, {
+    communityId: ctx.communityId,
+    entityType: "membership",
+    entityId: memberId,
+    entityLabel: membership.user.name ?? membership.user.email ?? "—",
+    action: "contact",
+    actorId: ctx.userId,
+    note: source ? `בנוגע ל${source.name}` : undefined,
+  });
+  revalidatePath("/app/activity");
+}
+
 export async function deleteSuggestion(id: string) {
   const ctx = await requireMembership();
   if (!can(ctx.role, "suggestion:manage")) throw new Error("forbidden");

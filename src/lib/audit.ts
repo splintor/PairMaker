@@ -9,7 +9,8 @@ export type AuditAction =
   | "deactivate"
   | "reactivate"
   | "delete"
-  | "login";
+  | "login"
+  | "contact";
 
 export type AuditInput = {
   communityId: string;

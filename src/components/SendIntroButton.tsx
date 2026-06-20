@@ -3,6 +3,7 @@
 import { copyImageToClipboard } from "@/lib/clipboard";
 import { whatsappHref } from "@/lib/phone";
 import { buildIntroMessage, type IntroParty } from "@/lib/intro-message";
+import { logIntroContact } from "@/app/app/matches/actions";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /**
@@ -13,12 +14,16 @@ import { WhatsAppIcon } from "@/components/WhatsAppIcon";
  * navigation opens WhatsApp, so the copy never blocks / triggers a popup block.
  */
 export function SendIntroButton({
+  suggestionId,
+  recipientId,
   recipientName,
   recipientGender,
   recipientPhone,
   intro,
   introPhotoSrc,
 }: {
+  suggestionId: string;
+  recipientId: string;
   recipientName: string;
   recipientGender: "male" | "female";
   recipientPhone: string;
@@ -33,6 +38,7 @@ export function SendIntroButton({
       rel="noopener noreferrer"
       onClick={() => {
         if (introPhotoSrc) void copyImageToClipboard(introPhotoSrc);
+        void logIntroContact(suggestionId, recipientId);
       }}
       className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
     >

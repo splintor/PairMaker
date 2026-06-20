@@ -73,6 +73,8 @@ export function SuggestionItem({ s }: { s: WithPair }) {
       {canIntroduce && (
         <div className="mt-3 flex flex-wrap gap-2">
           <SendIntroButton
+            suggestionId={s.id}
+            recipientId={s.candidateAId}
             recipientName={s.candidateA.name}
             recipientGender={s.candidateA.gender}
             recipientPhone={phoneA}
@@ -80,6 +82,8 @@ export function SuggestionItem({ s }: { s: WithPair }) {
             introPhotoSrc={photoSrcOf(s.candidateB)}
           />
           <SendIntroButton
+            suggestionId={s.id}
+            recipientId={s.candidateBId}
             recipientName={s.candidateB.name}
             recipientGender={s.candidateB.gender}
             recipientPhone={phoneB}

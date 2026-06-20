@@ -19,6 +19,7 @@ const ACTION_OPTIONS = [
   { value: "reactivate", label: "החזרה לפעילות" },
   { value: "delete", label: "מחיקה" },
   { value: "login", label: "התחברות" },
+  { value: "contact", label: "שליחת הודעה" },
 ];
 
 const selectCls = "rounded-lg border border-brand-200 px-2 py-1.5";
