@@ -6,9 +6,9 @@ export default async function NewCandidatePage() {
   await requireMembership();
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-brand-700">מועמד חדש</h1>
       <CandidateForm
         action={createCandidate}
+        title="מועמד חדש"
         submitLabel="הוספה"
         cancelHref="/app/candidates"
       />

@@ -26,11 +26,11 @@ export default async function EditCandidatePage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-brand-700">עריכת מועמד</h1>
       <CandidateForm
         action={action}
         values={values as Record<string, string | number | null | undefined>}
         photos={c.photos}
+        title="עריכת מועמד"
         submitLabel="שמירה"
         cancelHref={`/app/candidates/${id}`}
       />

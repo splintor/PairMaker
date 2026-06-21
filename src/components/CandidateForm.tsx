@@ -84,12 +84,14 @@ export function CandidateForm({
   action,
   values = {},
   photos = [],
+  title,
   submitLabel,
   cancelHref,
 }: {
   action: (formData: FormData) => void;
   values?: Values;
   photos?: string[];
+  title: string;
   submitLabel: string;
   cancelHref: string;
 }) {
@@ -178,6 +180,13 @@ export function CandidateForm({
         <LinkButton href={cancelHref}>ביטול</LinkButton>
       </div>
       <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-brand-700">{title}</h1>
+        {/* Hidden on mobile once the sticky action bar (with its own ביטול) appears. */}
+        <div className={showStickyBar ? "hidden sm:block" : ""}>
+          <LinkButton href={cancelHref}>ביטול</LinkButton>
+        </div>
+      </div>
       <div>
         <div ref={stickyAnchorRef} aria-hidden className="h-0" />
         <PhotoPicker
