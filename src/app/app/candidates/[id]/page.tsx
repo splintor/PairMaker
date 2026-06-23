@@ -53,11 +53,14 @@ export default async function CandidateProfile({
   // Social fields render as icons (SocialLinks), not as text rows.
   const SOCIAL_KEYS = ["facebook", "linkedin", "instagram", "twitter"];
   const relationEmpty = !(typeof details.relation === "string" && details.relation.trim());
+  const isSingle = details.familyStatus === "single";
   const profileFields = FIELDS.filter(
     (f) =>
       !["firstName", "lastName", "gender", "requirements", ...SOCIAL_KEYS].includes(f.key) &&
       // Skip the "how are they related to me?" row when it's empty.
-      !(f.key === "relation" && relationEmpty),
+      !(f.key === "relation" && relationEmpty) &&
+      // A never-married candidate has no children — hide the count.
+      !(f.key === "children" && isSingle),
   );
 
   const deactivateAction = deactivateCandidate.bind(null, id);
