@@ -7,6 +7,7 @@ import { MemberPhoneField } from "@/components/MemberPhoneField";
 import { MemberRoleSelect } from "@/components/MemberRoleSelect";
 import { MemberActionsMenu } from "@/components/MemberActionsMenu";
 import { RoleToggle } from "@/components/RoleToggle";
+import { PhoneInput } from "@/components/PhoneInput";
 import { CommunityLogoField } from "@/components/CommunityLogoField";
 import { addMember, renameCommunity } from "./actions";
 
@@ -43,25 +44,31 @@ export default async function SettingsPage() {
 
       <h2 className="text-lg font-bold text-brand-700">שדכני הקהילה</h2>
 
-      <form action={addMember} className="flex flex-wrap items-end gap-2 rounded-xl2 border border-brand-200 bg-white p-4">
+      <div className="space-y-2 rounded-xl2 border border-brand-200 bg-white p-4">
+        <div>
+          <h3 className="text-sm font-bold text-brand-700">הוספת שדכן/ית חדש/ה</h3>
+          <p className="text-xs text-slate-500">הזינו את פרטי השדכן/ית כדי לצרף אותו/ה לקהילה</p>
+        </div>
+        <form action={addMember} className="flex flex-wrap items-end gap-2">
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">שם</span>
           <input name="name" type="text" dir="rtl" required placeholder="שם מלא" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <label className="flex-1">
-          <span className="mb-1 block text-sm text-slate-600">הוספת שדכן/ית (אימייל)</span>
+          <span className="mb-1 block text-sm text-slate-600">אימייל</span>
           <input name="email" type="email" dir="rtl" required placeholder="name@example.com" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <label className="flex-1">
           <span className="mb-1 block text-sm text-slate-600">טלפון (לא חובה)</span>
-          <input name="phone" type="tel" dir="ltr" placeholder="050-1234567" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
+          <PhoneInput name="phone" placeholder="050-1234567" className="w-full rounded-lg border border-brand-200 px-3 py-2.5 text-start" />
         </label>
         <div>
           <span className="mb-1 block text-sm text-slate-600">תפקיד</span>
           <RoleToggle name="role" defaultValue="member" />
         </div>
         <PendingButton>הוספה</PendingButton>
-      </form>
+        </form>
+      </div>
 
       <div className="space-y-2">
         {members.map((m) => {
